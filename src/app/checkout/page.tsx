@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { CreditCard, CheckCircle2, ChevronRight, Truck, Landmark, Copy, ArrowLeft } from "lucide-react";
+import { CreditCard, CheckCircle2, ChevronRight, Truck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -18,10 +18,9 @@ export default function CheckoutPage() {
     city: "",
     notes: ""
   });
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank">("cod");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "card">("cod");
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
-  const [copyFeedback, setCopyFeedback] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,13 +37,6 @@ export default function CheckoutPage() {
     const generatedId = `SPN-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderId(generatedId);
     setOrderComplete(true);
-  };
-
-  const copyBankDetails = () => {
-    const text = "Commercial Bank, Account: 1000 8928 2901, Spartan Supplements LK";
-    navigator.clipboard.writeText(text);
-    setCopyFeedback(true);
-    setTimeout(() => setCopyFeedback(false), 2000);
   };
 
   const handleFinish = () => {
@@ -92,40 +84,24 @@ export default function CheckoutPage() {
           </div>
  
           {/* Payment Method Specific Instructions */}
-          {paymentMethod === "bank" ? (
+          {paymentMethod === "card" ? (
             <div className="p-6 rounded-lg bg-black border border-white/10 text-left space-y-4">
               <div className="flex items-center gap-2 text-spartan-gold font-bold text-sm uppercase tracking-wider">
-                <Landmark className="h-4.5 w-4.5" />
-                Bank Transfer Instructions
+                <CreditCard className="h-4.5 w-4.5" />
+                Online Card Payment Confirmed
               </div>
               <p className="text-sm text-white/70 leading-relaxed">
-                Please transfer the total sum of <span className="text-white font-bold">Rs. {cartTotal.toLocaleString()}</span> to the account below and send the receipt to our WhatsApp (+94 71 552 0324) along with your Order ID.
+                Thank you! Your online transaction of <span className="text-white font-bold">Rs. {cartTotal.toLocaleString()}</span> has been securely authorized and completed via PayPal gateways.
               </p>
-              
-              <div className="border-t border-white/5 pt-3 space-y-1.5 text-sm">
-                <div><span className="text-white/40 font-semibold">Bank:</span> Commercial Bank</div>
-                <div><span className="text-white/40 font-semibold">Branch:</span> Kandy Main Branch</div>
-                <div><span className="text-white/40 font-semibold">Account Name:</span> Spartan Supplements LK</div>
-                <div className="flex items-center justify-between">
-                  <span><span className="text-white/40 font-semibold">Account Number:</span> 1000 8928 2901</span>
-                  <button
-                    onClick={copyBankDetails}
-                    className="p-1 hover:text-spartan-gold text-white/60 transition-colors"
-                    title="Copy Details"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-                {copyFeedback && (
-                  <span className="text-xs text-green-500 font-semibold mt-1 block">Copied details to clipboard!</span>
-                )}
+              <div className="border-t border-white/5 pt-3 text-xs text-white/40">
+                Payment Status: <span className="text-emerald-400 font-bold uppercase">Paid & Confirmed</span>
               </div>
             </div>
           ) : (
             <div className="p-6 rounded-lg bg-black border border-white/10 text-left space-y-4">
               <div className="flex items-center gap-2 text-spartan-red font-bold text-sm uppercase tracking-wider">
                 <Truck className="h-4.5 w-4.5" />
-                Cash on Delivery
+                Cash on Delivery (COD)
               </div>
               <p className="text-sm text-white/70 leading-relaxed">
                 Your order of <span className="text-white font-bold">Rs. {cartTotal.toLocaleString()}</span> will be delivered to <span className="text-white font-bold">{formData.address}, {formData.city}</span>. Please prepare the exact cash amount for our courier agent.
@@ -263,23 +239,82 @@ export default function CheckoutPage() {
                     </div>
                   </label>
  
-                  {/* Bank Transfer */}
+                  {/* Credit Card / PayPal */}
                   <label className={`flex items-start gap-4 p-4 rounded border cursor-pointer transition-colors bg-spartan-gray ${
-                    paymentMethod === "bank" ? "border-spartan-red" : "border-white/5"
+                    paymentMethod === "card" ? "border-spartan-red" : "border-white/5"
                   }`}>
                     <input
                       type="radio"
                       name="paymentMethod"
-                      checked={paymentMethod === "bank"}
-                      onChange={() => setPaymentMethod("bank")}
+                      checked={paymentMethod === "card"}
+                      onChange={() => setPaymentMethod("card")}
                       className="mt-1 accent-spartan-red"
                     />
                     <div>
-                      <span className="font-bold text-white uppercase text-sm block">Bank Transfer</span>
-                      <span className="text-xs text-white/50 mt-1 block">Transfer money directly to our account.</span>
+                      <span className="font-bold text-white uppercase text-sm block flex items-center gap-1.5">
+                        Credit Card / PayPal
+                      </span>
+                      <span className="text-xs text-white/50 mt-1 block font-medium">Pay securely with Visa, MasterCard, or PayPal.</span>
                     </div>
                   </label>
                 </div>
+
+                {/* Inline Card Details Form */}
+                {paymentMethod === "card" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="p-5 rounded-lg bg-black border border-white/5 space-y-4 mt-4"
+                  >
+                    <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                      <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-spartan-gold" />
+                        Secure Payment Details
+                      </span>
+                      <div className="flex gap-1">
+                        <img src="https://img.icons8.com/color/36/000000/visa.png" alt="Visa" className="h-5 object-contain" />
+                        <img src="https://img.icons8.com/color/36/000000/mastercard.png" alt="MasterCard" className="h-5 object-contain" />
+                        <img src="https://img.icons8.com/color/48/000000/paypal.png" alt="PayPal" className="h-5 object-contain" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-neutral-500 uppercase">Card Number</label>
+                        <input
+                          type="text"
+                          required={paymentMethod === "card"}
+                          maxLength={19}
+                          placeholder="4111 2222 3333 4444"
+                          className="w-full bg-spartan-gray border border-white/10 rounded px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-spartan-red font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-neutral-500 uppercase">Expiration Date</label>
+                          <input
+                            type="text"
+                            required={paymentMethod === "card"}
+                            maxLength={5}
+                            placeholder="MM/YY"
+                            className="w-full bg-spartan-gray border border-white/10 rounded px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-spartan-red font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-neutral-500 uppercase">Security Code (CVC)</label>
+                          <input
+                            type="password"
+                            required={paymentMethod === "card"}
+                            maxLength={4}
+                            placeholder="123"
+                            className="w-full bg-spartan-gray border border-white/10 rounded px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-spartan-red font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
  
               <button

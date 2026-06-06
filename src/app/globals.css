@@ -145,3 +145,12 @@ body {
   background-clip: text;
   animation: shimmer 3s infinite linear;
 }
+
+/* Suppress default ugly outlines for buttons and interactive elements unless navigating with keyboard */
+button:focus,
+a:focus,
+select:focus,
+div:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

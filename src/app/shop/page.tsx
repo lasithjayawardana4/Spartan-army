@@ -3,13 +3,17 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { PRODUCTS, CATEGORIES, Product } from "@/data/products";
-import { Star, Heart, Eye, ShoppingCart, SlidersHorizontal, Search, RotateCcw } from "lucide-react";
+import { CATEGORIES, Product } from "@/data/products";
+import { Star, Heart, Eye, ShoppingCart, SlidersHorizontal, Search, RotateCcw, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 function ShopContent() {
   const searchParams = useSearchParams();
   const { addToCart, wishlist, toggleWishlist, searchQuery, setSearchQuery } = useCart();
+
+  // Products State
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
 
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -35,8 +39,24 @@ function ShopContent() {
     }
   }, [searchParams]);
 
+  // Fetch products from API
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+        setLoadingProducts(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch products:", err);
+        setLoadingProducts(false);
+      });
+  }, []);
+
   // Filter & Sort Logic
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     // 1. Category Filter
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     
@@ -71,7 +91,7 @@ function ShopContent() {
   };
 
   return (
-    <div className="mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+    <div className="w-full mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 py-6 md:py-12">
       
       {/* Title / Banner */}
       <div className="border-b border-white/5 pb-4 md:pb-8 mb-4 md:mb-10">
@@ -87,7 +107,7 @@ function ShopContent() {
       </div>
 
       {/* Main Container */}
-      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
+      <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
         
         {/* Sidebar Filters - Desktop */}
         <aside className="hidden lg:block w-64 flex-shrink-0 space-y-8 glass-panel p-6 rounded-lg">
@@ -287,13 +307,28 @@ function ShopContent() {
           </div>
 
           {/* Product Grid */}
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-20 bg-spartan-gray rounded-lg border border-white/5">
-              <p className="text-lg text-white/50 font-bold uppercase tracking-wide">No Supplements Found</p>
-              <p className="text-sm text-white/30 mt-1">Adjust filters or search parameters to discover other warrior fuels.</p>
+          {loadingProducts ? (
+            <div className="w-full flex flex-col items-center justify-center py-20 min-h-[550px] bg-spartan-gray/30 border border-white/5 rounded-xl backdrop-blur-md shadow-glow-dark">
+              <Loader2 className="h-10 w-10 animate-spin text-spartan-red" />
+              <p className="text-sm text-white/50 mt-4 uppercase tracking-wider font-black">Forging the Armory...</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="w-full flex flex-col items-center justify-center text-center py-20 min-h-[550px] bg-spartan-gray/40 border border-white/5 rounded-xl backdrop-blur-md shadow-glow-dark px-4">
+              <div className="relative mb-6">
+                {/* Glowing search/filter icon wrapper */}
+                <div className="h-16 w-16 rounded-full bg-zinc-950 border border-spartan-gold/30 flex items-center justify-center text-spartan-gold shadow-[0_0_15px_rgba(212,175,55,0.25)]">
+                  <SlidersHorizontal className="h-6 w-6" />
+                </div>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider mb-2">
+                No Supplements Found
+              </h3>
+              <p className="text-sm text-white/50 max-w-md mx-auto leading-relaxed mb-8">
+                We couldn't find any warrior formulas matching your current filter selection. Adjust the filters or clear them to view the full armory.
+              </p>
               <button
                 onClick={resetFilters}
-                className="mt-6 inline-flex items-center gap-2 rounded bg-spartan-red hover:bg-spartan-red-dark text-white px-6 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 rounded bg-spartan-red hover:bg-spartan-red-dark text-white px-8 py-3.5 text-xs font-black uppercase tracking-widest transition-all shadow-glow-red hover:shadow-glow-red-heavy cursor-pointer focus:outline-none"
               >
                 Clear All Filters
               </button>
@@ -334,11 +369,15 @@ function ShopContent() {
                           <Heart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
                         </button>
                         
-                        {product.oldPrice && (
+                        {product.stock <= 0 ? (
+                          <span className="absolute top-4 left-4 bg-zinc-800 border border-zinc-700 text-neutral-400 text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded z-10">
+                            Sold Out
+                          </span>
+                        ) : product.oldPrice ? (
                           <span className="absolute top-4 left-4 bg-spartan-red text-white text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded">
                             Sale
                           </span>
-                        )}
+                        ) : null}
 
                         {/* Actions */}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
@@ -407,10 +446,20 @@ function ShopContent() {
                         </div>
 
                         <button
+                          disabled={product.stock <= 0}
                           onClick={() => addToCart(product)}
-                          className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red transition-all duration-200 cursor-pointer"
+                          className={`flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded transition-all duration-250 ${
+                            product.stock <= 0
+                              ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed"
+                              : "bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red cursor-pointer"
+                          }`}
+                          title={product.stock <= 0 ? "Sold Out" : "Add to Cart"}
                         >
-                          <ShoppingCart className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
+                          {product.stock <= 0 ? (
+                            <span className="text-[9px] font-black uppercase">X</span>
+                          ) : (
+                            <ShoppingCart className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
+                          )}
                         </button>
                       </div>
                     </div>

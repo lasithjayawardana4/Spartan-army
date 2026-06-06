@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { PRODUCTS, CATEGORIES, Product } from "@/data/products";
-import { Flame, Star, Shield, Award, Zap, Heart, Eye, ShoppingCart, ArrowRight, Trophy, Search, ChevronLeft, ChevronRight, Truck } from "lucide-react";
+import { Product } from "@/data/products";
+import { Flame, Star, Shield, Award, Zap, Heart, Eye, ShoppingCart, ArrowRight, Trophy, Search, ChevronLeft, ChevronRight, Truck, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -65,6 +65,23 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"best-sellers" | "new-arrivals">("best-sellers");
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
   const [newsletterForm, setNewsletterForm] = useState({ name: "", email: "" });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+        setLoadingProducts(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch products:", err);
+        setLoadingProducts(false);
+      });
+  }, []);
 
   // Smoke clicks state
   const [clicks, setClicks] = useState<SmokeClick[]>([]);
@@ -156,7 +173,7 @@ export default function HomePage() {
     }
   };
 
-  const featuredProducts = PRODUCTS.filter((p) =>
+  const featuredProducts = products.filter((p) =>
     activeTab === "best-sellers" ? p.isBestSeller : p.isNewArrival
   );
 
@@ -591,10 +608,21 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Products grid - Redesigned to Gymshark modern luxury aesthetic */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-              {featuredProducts.slice(0, 4).map((product) => {
-                const isWishlisted = wishlist.includes(product.id);
+              {loadingProducts ? (
+                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center text-white/50 text-xs">
+                  <Loader2 className="h-6 w-6 animate-spin text-spartan-red mb-2" />
+                  <span>Loading Spartan Formulations...</span>
+                </div>
+              ) : featuredProducts.length === 0 ? (
+                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center text-white/50 text-xs border border-white/5 rounded-xl bg-zinc-950/20">
+                  <Shield className="h-8 w-8 text-spartan-red/40 mb-2" />
+                  <span className="font-bold text-white uppercase tracking-wider mb-1">No Formulations Available</span>
+                  <span>Awaiting administrator catalog configuration.</span>
+                </div>
+              ) : (
+                featuredProducts.slice(0, 4).map((product) => {
+                  const isWishlisted = wishlist.includes(product.id);
                 return (
                   <div
                     key={product.id}
@@ -611,11 +639,15 @@ export default function HomePage() {
                             className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                           />
                         </Link>
-                        {product.oldPrice && (
-                          <span className="absolute top-3 left-3 bg-gradient-to-r from-spartan-red to-red-600 text-white text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-spartan-red/30">
+                        {product.stock <= 0 ? (
+                          <span className="absolute top-3 left-3 bg-zinc-800 border border-zinc-700 text-neutral-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full z-10">
+                            Sold Out
+                          </span>
+                        ) : product.oldPrice ? (
+                          <span className="absolute top-3 left-3 bg-gradient-to-r from-spartan-red to-red-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-spartan-red/30">
                             Sale
                           </span>
-                        )}
+                        ) : null}
 
                         {/* Heart (wishlist) button absolute-positioned in the top-right corner */}
                         <button
@@ -719,14 +751,23 @@ export default function HomePage() {
                         </div>
 
                         <button
+                          disabled={product.stock <= 0}
                           onClick={(e) => {
                             handleSmokeClick(e);
                             addToCart(product);
                           }}
-                          className="relative overflow-hidden flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red transition-all duration-200 cursor-pointer"
-                          title="Add to Cart"
+                          className={`relative overflow-hidden flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full transition-all duration-200 ${
+                            product.stock <= 0
+                              ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed"
+                              : "bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red cursor-pointer"
+                          }`}
+                          title={product.stock <= 0 ? "Sold Out" : "Add to Cart"}
                         >
-                          <ShoppingCart className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          {product.stock <= 0 ? (
+                            <span className="text-[8px] font-black uppercase">X</span>
+                          ) : (
+                            <ShoppingCart className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          )}
                           {clicks.map((click) => (
                             <span
                               key={click.id}
@@ -739,7 +780,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
 
             <div className="text-center pt-2">

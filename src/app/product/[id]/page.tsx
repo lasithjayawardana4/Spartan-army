@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { PRODUCTS, Product } from "@/data/products";
-import { Star, Heart, ShoppingCart, MessageCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight } from "lucide-react";
+import { Product } from "@/data/products";
+import { Star, Heart, ShoppingCart, MessageCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface ProductPageProps {
@@ -16,12 +16,63 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   const router = useRouter();
   const { addToCart, wishlist, toggleWishlist } = useCart();
   
-  const product = PRODUCTS.find((p) => p.id === id);
-  
   // States
-  const [selectedImage, setSelectedImage] = useState<string>(product?.image || "");
+  const [product, setProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"description" | "benefits" | "ingredients" | "usage">("description");
+
+  // Fetch product and related products
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+
+    fetch(`/api/products/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Product not found");
+        return res.json();
+      })
+      .then((data) => {
+        if (active) {
+          setProduct(data);
+          setSelectedImage(data.image || "");
+          
+          // Fetch related products
+          fetch("/api/products")
+            .then((res) => res.json())
+            .then((allProducts) => {
+              if (active && Array.isArray(allProducts)) {
+                setProducts(allProducts);
+              }
+            })
+            .catch((err) => console.error("Error fetching related products:", err));
+
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching product:", err);
+        if (active) {
+          setProduct(null);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-screen bg-black text-white">
+        <Loader2 className="h-8 w-8 animate-spin text-spartan-red" />
+        <p className="text-sm text-white/50 mt-4 uppercase tracking-wider font-bold">Retrieving Warrior Formula...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -38,16 +89,28 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
     );
   }
 
-  // Pre-fill primary image if state is empty on initial render
-  if (!selectedImage && product.image) {
-    setSelectedImage(product.image);
-  }
-
   const isWishlisted = wishlist.includes(product.id);
+
+  // Image switcher handlers
+  const handlePrevImage = () => {
+    if (!product || !product.images || product.images.length <= 1) return;
+    const currentIndex = product.images.indexOf(selectedImage);
+    const prevIndex = currentIndex === 0 ? product.images.length - 1 : currentIndex - 1;
+    setSelectedImage(product.images[prevIndex]);
+  };
+
+  const handleNextImage = () => {
+    if (!product || !product.images || product.images.length <= 1) return;
+    const currentIndex = product.images.indexOf(selectedImage);
+    const nextIndex = currentIndex === product.images.length - 1 ? 0 : currentIndex + 1;
+    setSelectedImage(product.images[nextIndex]);
+  };
   
   // WhatsApp link generator
-  const getWhatsAppInquiryUrl = () => {
-    const text = `Hello Spartan Supplements, I would like to inquire about the product: ${product.name} (Rs. ${product.price.toLocaleString()})`;
+  const getWhatsAppInquiryUrl = (isRestock: boolean = false) => {
+    const text = isRestock
+      ? `Hello Spartan Supplements, I would like to inquire about when the product: ${product.name} (Rs. ${product.price.toLocaleString()}) will be restocked.`
+      : `Hello Spartan Supplements, I would like to inquire about the product: ${product.name} (Rs. ${product.price.toLocaleString()})`;
     return `https://wa.me/94715520324?text=${encodeURIComponent(text)}`;
   };
 
@@ -57,7 +120,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   };
 
   // Filter related products
-  const relatedProducts = PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   return (
     <div className="relative min-h-screen bg-black">
@@ -81,16 +144,50 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
         </div>
 
         {/* Main product card */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start bg-spartan-gray/40 border border-white/5 p-6 sm:p-10 rounded-xl backdrop-blur-md">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start bg-spartan-gray/40 border border-white/5 p-6 sm:p-10 rounded-xl backdrop-blur-md">
           
-          {/* Gallery column */}
-          <div className="space-y-4">
-            <div className="relative bg-black aspect-square overflow-hidden flex items-center justify-center p-6 border border-white/5 rounded-lg">
-              <img
-                src={selectedImage}
-                alt={product.name}
-                className="max-h-full max-w-full object-contain"
-              />
+          {/* Gallery column - takes 5 out of 12 columns, max-width constrained */}
+          <div className="lg:col-span-5 space-y-4 max-w-[480px] mx-auto w-full">
+            <div className="relative">
+              {/* Main Image Container with red border and NO overflow-hidden to allow logo breakout */}
+              <div className="relative bg-black aspect-square flex items-center justify-center p-6 border-2 border-spartan-red-dark rounded-lg">
+                
+                {/* Navigation Arrows */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrevImage}
+                      className="absolute left-2.5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950/80 hover:bg-black text-white hover:text-spartan-gold border border-spartan-red/30 hover:border-spartan-gold active:scale-95 shadow-[0_0_8px_rgba(179,0,0,0.3)] hover:shadow-[0_0_15px_rgba(179,0,0,0.6)] transition-all duration-200 cursor-pointer"
+                      title="Previous Image"
+                    >
+                      <ChevronLeft className="h-4.5 w-4.5 stroke-[2.5px]" />
+                    </button>
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute right-2.5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-950/80 hover:bg-black text-white hover:text-spartan-gold border border-spartan-red/30 hover:border-spartan-gold active:scale-95 shadow-[0_0_8px_rgba(179,0,0,0.3)] hover:shadow-[0_0_15px_rgba(179,0,0,0.6)] transition-all duration-200 cursor-pointer"
+                      title="Next Image"
+                    >
+                      <ChevronRight className="h-4.5 w-4.5 stroke-[2.5px]" />
+                    </button>
+                  </>
+                )}
+
+                {/* Main image */}
+                <img
+                  src={selectedImage}
+                  alt={product.name}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+
+              {/* Brand Logo Helmet Badge sitting on the top-right corner, outside the box */}
+              <div className="absolute -top-3 -right-3 md:-top-5 md:-right-5 z-20 pointer-events-none select-none">
+                <img
+                  src="/images/spartan_logo.png"
+                  alt="Spartan Brand Logo"
+                  className="h-10 w-10 md:h-16 md:w-16 object-contain filter drop-shadow-[0_0_8px_rgba(179,0,0,0.95)] drop-shadow-[0_0_3px_rgba(255,255,255,0.55)]"
+                />
+              </div>
             </div>
             
             {product.images && product.images.length > 1 && (
@@ -110,8 +207,8 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             )}
           </div>
 
-          {/* Info Column */}
-          <div className="space-y-6">
+          {/* Info Column - takes 7 out of 12 columns */}
+          <div className="lg:col-span-7 space-y-6">
             <div>
               <span className="text-sm font-bold text-spartan-gold uppercase tracking-wider">
                 {product.category.replace("-", " ")}
@@ -132,13 +229,27 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             </div>
 
             {/* Pricing */}
-            <div className="flex items-baseline gap-3 border-b border-white/5 pb-4">
+            <div className="flex items-center flex-wrap gap-3 border-b border-white/5 pb-4">
               <span className="text-2xl sm:text-3xl font-black text-white">
                 Rs. {product.price.toLocaleString()}
               </span>
               {product.oldPrice && (
                 <span className="text-sm text-white/40 line-through">
                   Rs. {product.oldPrice.toLocaleString()}
+                </span>
+              )}
+              {/* Stock Status Badge */}
+              {product.stock <= 0 ? (
+                <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-red text-spartan-red animate-pulse">
+                  Sold Out
+                </span>
+              ) : product.stock <= 5 ? (
+                <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-gold text-spartan-gold">
+                  Low Stock ({product.stock} Left)
+                </span>
+              ) : (
+                <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-emerald-600 text-emerald-500">
+                  In Stock
                 </span>
               )}
             </div>
@@ -148,31 +259,37 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             </p>
 
             {/* Key Specs */}
-            <div className="grid grid-cols-2 gap-4 py-4 px-5 rounded bg-black border border-white/5">
-              {product.features.map((feat, i) => (
-                <div key={i} className="text-xs sm:text-sm">
-                  <span className="text-white/40 block font-semibold">{feat.label}:</span>
-                  <span className="text-white font-bold">{feat.value}</span>
-                </div>
-              ))}
-            </div>
+            {product.features && product.features.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 py-4 px-5 rounded bg-black border border-white/5">
+                {product.features.map((feat, i) => (
+                  <div key={i} className="text-xs sm:text-sm">
+                    <span className="text-white/40 block font-semibold">{feat.label}:</span>
+                    <span className="text-white font-bold">{feat.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Quantity and Actions */}
-            <div className="space-y-4 pt-4 border-t border-white/5">
+            <div className="space-y-4 pt-4 border-t border-white/5 max-w-[480px] w-full">
               <div className="flex flex-wrap items-center gap-4">
                 
                 {/* Qty Selector */}
-                <div className="flex items-center justify-between border border-white/10 rounded bg-black h-12 order-1 flex-1 sm:flex-initial sm:w-auto">
+                <div className={`flex items-center justify-between border border-white/10 rounded bg-black h-12 order-1 flex-1 sm:flex-initial sm:w-auto ${
+                  product.stock <= 0 ? "opacity-30 pointer-events-none" : ""
+                }`}>
                   <button
+                    disabled={product.stock <= 0}
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="px-4 text-white/60 hover:text-white transition-colors h-full"
                   >
                     -
                   </button>
                   <span className="px-4 text-sm font-bold text-white min-w-[40px] text-center">
-                    {quantity}
+                    {product.stock <= 0 ? 0 : quantity}
                   </span>
                   <button
+                    disabled={product.stock <= 0}
                     onClick={() => setQuantity(quantity + 1)}
                     className="px-4 text-white/60 hover:text-white transition-colors h-full"
                   >
@@ -182,11 +299,16 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
                 {/* Add to Cart */}
                 <button
+                  disabled={product.stock <= 0}
                   onClick={() => addToCart(product, quantity)}
-                  className="order-3 w-full sm:order-2 sm:flex-1 h-12 inline-flex items-center justify-center gap-2 rounded bg-spartan-red hover:bg-spartan-red-dark text-white font-bold uppercase tracking-wider text-sm transition-all shadow-glow-red hover:shadow-glow-red-heavy cursor-pointer"
+                  className={`order-3 w-full sm:order-2 sm:flex-1 h-12 inline-flex items-center justify-center gap-2 rounded font-bold uppercase tracking-wider text-sm transition-all cursor-pointer ${
+                    product.stock <= 0
+                      ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed shadow-none"
+                      : "bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red hover:shadow-glow-red-heavy"
+                  }`}
                 >
                   <ShoppingCart className="h-4.5 w-4.5" />
-                  Add to Cart
+                  {product.stock <= 0 ? "Sold Out" : "Add to Cart"}
                 </button>
 
                 {/* Wishlist button */}
@@ -202,23 +324,37 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
               </div>
 
               {/* Buy Now & Contact Sellers */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button
-                  onClick={handleBuyNow}
-                  className="h-12 rounded bg-white text-black hover:bg-spartan-gold hover:text-black font-bold uppercase tracking-wider text-sm sm:text-base transition-colors cursor-pointer"
-                >
-                  Buy it Now
-                </button>
-                <a
-                  href={getWhatsAppInquiryUrl()}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="h-12 rounded border border-spartan-gold/30 bg-spartan-gold/10 hover:bg-spartan-gold/20 text-spartan-gold font-bold uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 transition-colors"
-                >
-                  <MessageCircle className="h-4.5 w-4.5" />
-                  Contact Sellers
-                </a>
-              </div>
+              {product.stock <= 0 ? (
+                <div className="pt-2">
+                  <a
+                    href={getWhatsAppInquiryUrl(true)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full h-12 rounded border border-spartan-gold/30 bg-spartan-gold/10 hover:bg-spartan-gold/20 text-spartan-gold font-bold uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <MessageCircle className="h-4.5 w-4.5" />
+                    Inquire for Restock
+                  </a>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <button
+                    onClick={handleBuyNow}
+                    className="h-12 rounded bg-white text-black hover:bg-spartan-gold hover:text-black font-bold uppercase tracking-wider text-sm sm:text-base transition-colors cursor-pointer"
+                  >
+                    Buy it Now
+                  </button>
+                  <a
+                    href={getWhatsAppInquiryUrl(false)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-12 rounded border border-spartan-gold/30 bg-spartan-gold/10 hover:bg-spartan-gold/20 text-spartan-gold font-bold uppercase tracking-wider text-sm sm:text-base flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  >
+                    <MessageCircle className="h-4.5 w-4.5" />
+                    Contact Sellers
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Secure / Delivery Badges */}
@@ -265,7 +401,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
             {activeTab === "benefits" && (
               <ul className="list-disc list-inside space-y-2">
-                {product.benefits.map((benefit, i) => (
+                {(product.benefits || []).map((benefit, i) => (
                   <li key={i}>{benefit}</li>
                 ))}
               </ul>
@@ -273,7 +409,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
             {activeTab === "ingredients" && (
               <div className="flex flex-wrap gap-2">
-                {product.ingredients.map((ing, i) => (
+                {(product.ingredients || []).map((ing, i) => (
                   <span key={i} className="bg-white/5 border border-white/10 rounded-full px-3 py-1 text-sm text-white">
                     {ing}
                   </span>
@@ -302,7 +438,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                 >
                   {/* Image Container with red border */}
                   <div className="relative m-2">
-                    <div className="aspect-square overflow-hidden flex items-center justify-center p-2 sm:p-4 border-2 border-spartan-red-dark rounded-lg bg-black">
+                    <div className="relative aspect-square overflow-hidden flex items-center justify-center p-2 sm:p-4 border-2 border-spartan-red-dark rounded-lg bg-black">
                       <Link
                         href={`/product/${p.id}`}
                         className="w-full h-full flex items-center justify-center"
@@ -313,6 +449,11 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                           className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                         />
                       </Link>
+                      {p.stock <= 0 && (
+                        <span className="absolute top-3 left-3 bg-zinc-800 border border-zinc-700 text-neutral-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full z-10">
+                          Sold Out
+                        </span>
+                      )}
                     </div>
 
                     {/* Brand Logo Badge sitting on the top-right corner, outside the overflow-hidden box */}
@@ -335,15 +476,20 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                       <p className="text-sm font-bold text-spartan-gold mt-1">Rs. {p.price.toLocaleString()}</p>
                     </div>
                     <button
+                      disabled={p.stock <= 0}
                       onClick={() => {
                         addToCart(p);
                         setSelectedImage(p.image);
                         setQuantity(1);
                         setActiveTab("description");
                       }}
-                      className="w-full py-2.5 rounded bg-spartan-red hover:bg-spartan-red-dark text-white text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      className={`w-full py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                        p.stock <= 0
+                          ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed"
+                          : "bg-spartan-red hover:bg-spartan-red-dark text-white"
+                      }`}
                     >
-                      Quick Add
+                      {p.stock <= 0 ? "Sold Out" : "Quick Add"}
                     </button>
                   </div>
                 </div>
