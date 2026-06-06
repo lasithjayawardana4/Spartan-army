@@ -1,8 +1,4 @@
 import { MongoClient } from 'mongodb';
-import dns from 'dns';
-
-// Set custom DNS resolvers programmatically to bypass local ISP SRV resolution limits
-dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Please add your MONGODB_URI to .env.local');
