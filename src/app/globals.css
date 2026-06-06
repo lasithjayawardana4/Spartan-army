@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@theme {
+  --color-spartan-red: #B30000;
+  --color-spartan-red-dark: #800000;
+  --color-spartan-gold: #D4AF37;
+  --color-spartan-black: #000000;
+  --color-spartan-charcoal: #0a0a0a;
+  --color-spartan-gray: #121212;
+  --color-spartan-gray-light: #1e1e1e;
+  --color-spartan-gray-text: #a0a0a0;
+
+  --shadow-glow-red: 0 0 15px rgba(179, 0, 0, 0.45);
+  --shadow-glow-red-heavy: 0 0 30px rgba(179, 0, 0, 0.7);
+  --shadow-glow-gold: 0 0 15px rgba(212, 175, 55, 0.4);
+
+  --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-medieval), fantasy, sans-serif;
+  --font-mono: monospace;
+}
+
+h1, h2, h3, h4, h5, h6, .font-viking {
+  font-family: var(--font-display) !important;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Glassmorphism panel styling */
+.glass-panel {
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-red {
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(179, 0, 0, 0.2);
+}
+
+.glass-panel-gold {
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Red glow background effects */
+.bg-glow-red {
+  position: relative;
+}
+.bg-glow-red::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(179, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e1e1e;
+  border: 1px solid #121212;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B30000;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: #B30000;
+  color: #ffffff;
+}
+
+/* Smoke animation for buttons */
+@keyframes smoke-expansion {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.6;
+    filter: blur(4px);
+  }
+  50% {
+    opacity: 0.4;
+    filter: blur(12px);
+  }
+  100% {
+    transform: translate(-50%, -150%) scale(4);
+    opacity: 0;
+    filter: blur(24px);
+  }
+}
+
+.smoke-particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(179,0,0,0.6) 0%, rgba(212,175,55,0.2) 50%, rgba(0,0,0,0) 70%);
+  width: 40px;
+  height: 40px;
+  animation: smoke-expansion 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Shimmer animation for Swipe to Shop */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.2) 75%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer 3s infinite linear;
+}
