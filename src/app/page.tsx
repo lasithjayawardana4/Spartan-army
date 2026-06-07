@@ -510,7 +510,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Delivery Banner + Transparent Spartan Rider (Desktop Only) */}
-            <div className="hidden lg:flex lg:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-hidden">
+            <div className="hidden lg:flex lg:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-visible">
               {/* Subtle red background glow directly on the page background */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               
@@ -543,7 +543,7 @@ export default function HomePage() {
               </div>
 
               {/* Right aligned HUGE floating transparent spartan rider image */}
-              <div className="absolute bottom-0 right-0 w-[60%] sm:w-[65%] lg:w-[70%] h-[120%] flex items-end justify-end pointer-events-none select-none z-10 overflow-visible">
+              <div className="absolute bottom-0 right-0 w-[80%] lg:w-[90%] h-[120%] flex items-end justify-end pointer-events-none select-none z-10 overflow-visible">
                 <motion.img
                   src="/images/spartan_rider.png"
                   alt="Spartan Delivery Rider"
@@ -794,13 +794,13 @@ export default function HomePage() {
             </div>
 
             {/* Mobile-only Delivery Banner (Warrior Logistics) */}
-            <div className="lg:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[360px] overflow-hidden mt-4">
-              {/* Subtle red background glow directly on the page background */}
+            <div className="lg:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[380px] overflow-hidden mt-4">
+              {/* Subtle red background glow */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               
               {/* Left aligned text contents */}
-              <div className="space-y-5 max-w-[60%] sm:max-w-[65%] z-10 text-left relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                <span className="inline-flex items-center gap-1.5 bg-spartan-red/15 border border-spartan-red/30 rounded-full px-3.5 py-1.5 text-[10px] font-black text-spartan-red uppercase tracking-widest shadow-lg">
+              <div className="space-y-4 max-w-[58%] z-10 text-left relative drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                <span className="inline-flex items-center gap-1.5 bg-spartan-red/15 border border-spartan-red/30 rounded-full px-3 py-1.5 text-[10px] font-black text-spartan-red uppercase tracking-widest shadow-lg">
                   <Truck className="h-3.5 w-3.5" />
                   Island-wide Delivery
                 </span>
@@ -810,31 +810,31 @@ export default function HomePage() {
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-spartan-red via-red-500 to-spartan-gold filter drop-shadow-[0_0_10px_rgba(179,0,0,0.45)]">LOGISTICS</span>
                 </h3>
                 
-                <p className="text-sm text-white/90 leading-relaxed font-extrabold drop-shadow">
-                  We deliver all around the country Sri Lanka with care within <span className="text-spartan-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">2-4 working days</span>.
+                <p className="text-xs text-white/90 leading-relaxed font-extrabold drop-shadow">
+                  We deliver all around Sri Lanka within <span className="text-spartan-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">2-4 working days</span>.
                 </p>
                 
-                <div className="pt-2 space-y-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-2 w-2 rounded-full bg-spartan-gold shadow-[0_0_6px_#D4AF37]" />
-                    <span className="text-[10px] uppercase font-black tracking-wider text-white/70">Secure Packaging Guarantee</span>
+                <div className="pt-1 space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-spartan-gold shadow-[0_0_6px_#D4AF37] shrink-0" />
+                    <span className="text-[10px] uppercase font-black tracking-wider text-white/70">Secure Packaging</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-2 w-2 rounded-full bg-spartan-red shadow-[0_0_6px_#B30000]" />
-                    <span className="text-[10px] uppercase font-black tracking-wider text-white/70">Island-wide Live Tracking</span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-spartan-red shadow-[0_0_6px_#B30000] shrink-0" />
+                    <span className="text-[10px] uppercase font-black tracking-wider text-white/70">Island-wide Tracking</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right aligned HUGE floating transparent spartan rider image */}
-              <div className="absolute bottom-0 right-0 w-[60%] sm:w-[65%] h-[120%] flex items-end justify-end pointer-events-none select-none z-10 overflow-visible">
+              {/* Right: Spartan rider image — fitted within bounds, no overflow */}
+              <div className="absolute bottom-0 right-0 w-[50%] h-full flex items-end justify-end pointer-events-none select-none z-10">
                 <motion.img
                   src="/images/spartan_rider.png"
                   alt="Spartan Delivery Rider"
-                  className="max-h-[125%] w-auto object-contain origin-bottom-right drop-shadow-[0_25px_30px_rgba(0,0,0,0.9)] translate-x-4 translate-y-4"
+                  className="w-full h-auto max-h-full object-contain object-bottom drop-shadow-[0_25px_30px_rgba(0,0,0,0.9)]"
                   animate={{ 
-                    y: [0, -12, 0],
-                    rotate: [0, -1.5, 0]
+                    y: [0, -10, 0],
+                    rotate: [0, -1, 0]
                   }}
                   transition={{ 
                     repeat: Infinity, 
