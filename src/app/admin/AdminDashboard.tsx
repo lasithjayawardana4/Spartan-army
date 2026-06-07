@@ -24,8 +24,26 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileText,
-  Loader2
+  Loader2,
+  Key,
+  Eye,
+  Copy,
+  Check,
+  Heart,
+  MapPin,
+  Mail,
+  Phone,
+  Calendar
 } from 'lucide-react';
+
+import {
+  adminFetchUsers,
+  adminResetPassword,
+  adminFetchPasswordResets,
+  adminDeletePasswordResetRequest,
+  adminFetchOrders,
+  adminUpdateOrderStatus
+} from '@/app/actions/userActions';
 
 interface AdminDashboardProps {
   email: string;
@@ -36,7 +54,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const [isPending, startTransition] = useTransition();
 
   // Dashboard state tabs
-  const [activeTab, setActiveTab] = useState<'products' | 'console'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'console' | 'users' | 'orders'>('products');
   
   // Database states
   const [products, setProducts] = useState<Product[]>([]);
@@ -44,6 +62,34 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   
   // Local filtering state
   const [searchQuery, setSearchQuery] = useState('');
+
+  // User Accounts and Reset Requests states
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [resetRequests, setResetRequests] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
+  const [loadingResets, setLoadingResets] = useState<boolean>(false);
+  const [usersSearchQuery, setUsersSearchQuery] = useState('');
+  
+  // Selected user for View Profile Drawer/Modal
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  
+  // Direct password reset form states
+  const [resetPasswordEmail, setResetPasswordEmail] = useState<string | null>(null);
+  const [newPasswordVal, setNewPasswordVal] = useState('');
+  const [resettingPw, setResettingPw] = useState(false);
+  const [resetPwError, setResetPwError] = useState<string | null>(null);
+  const [resetPwSuccess, setResetPwSuccess] = useState<string | null>(null);
+
+  // Orders states
+  const [ordersList, setOrdersList] = useState<any[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState<boolean>(false);
+  const [ordersSearchQuery, setOrdersSearchQuery] = useState('');
+  const [ordersFilterStatus, setOrdersFilterStatus] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [updatingOrderStatus, setUpdatingOrderStatus] = useState<boolean>(false);
+
+  // Copied token state for reset requests
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // Editing form states
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -163,9 +209,131 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const res = await adminFetchUsers();
+      if (res.success && res.users) {
+        setUsersList(res.users);
+      }
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const fetchResets = async () => {
+    try {
+      setLoadingResets(true);
+      const res = await adminFetchPasswordResets();
+      if (res.success && res.requests) {
+        setResetRequests(res.requests);
+      }
+    } catch (err) {
+      console.error('Failed to fetch reset requests:', err);
+    } finally {
+      setLoadingResets(false);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      const res = await adminFetchOrders();
+      if (res.success && res.orders) {
+        setOrdersList(res.orders);
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin orders:', err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+    try {
+      setUpdatingOrderStatus(true);
+      const res = await adminUpdateOrderStatus(orderId, newStatus);
+      if (res.success) {
+        if (selectedOrder && selectedOrder.orderId === orderId) {
+          setSelectedOrder((prev: any) => prev ? { ...prev, status: newStatus } : null);
+        }
+        await fetchOrders();
+      } else {
+        alert(res.error || "Failed to update order status.");
+      }
+    } catch (err) {
+      console.error("Update status error:", err);
+      alert("Connection error. Failed to update status.");
+    } finally {
+      setUpdatingOrderStatus(false);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'users') {
+      fetchUsers();
+      fetchResets();
+    } else if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [activeTab]);
+
+  const handleCopyLink = (token: string) => {
+    const url = `${window.location.origin}/reset-password?token=${token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedToken(token);
+    setTimeout(() => {
+      setCopiedToken(null);
+    }, 2000);
+  };
+
+  const handleDirectPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPasswordEmail || !newPasswordVal.trim()) return;
+
+    setResettingPw(true);
+    setResetPwError(null);
+    setResetPwSuccess(null);
+
+    try {
+      const res = await adminResetPassword(resetPasswordEmail, newPasswordVal);
+      if (res.success) {
+        setResetPwSuccess(res.message || 'Password updated successfully!');
+        setNewPasswordVal('');
+        setTimeout(() => {
+          setResetPasswordEmail(null);
+          setResetPwSuccess(null);
+        }, 2000);
+      } else {
+        setResetPwError(res.error || 'Failed to override password.');
+      }
+    } catch (err: any) {
+      setResetPwError(err.message || 'An error occurred.');
+    } finally {
+      setResettingPw(false);
+    }
+  };
+
+  const handleDeleteResetRequest = async (token: string) => {
+    if (!confirm('Are you sure you want to delete this password reset request?')) return;
+    try {
+      const res = await adminDeletePasswordResetRequest(token);
+      if (res.success) {
+        setResetRequests(prev => prev.filter(r => r.token !== token));
+      } else {
+        alert(res.error || 'Failed to delete request.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'An error occurred.');
+    }
+  };
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -476,6 +644,30 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
             <ShoppingBag className="h-4 w-4" />
             Products Catalog ({products.length})
             {activeTab === 'products' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-spartan-red" />
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('users'); setEditingProduct(null); }}
+            className={`pb-4 px-6 text-xs font-bold uppercase tracking-wider relative transition-colors cursor-pointer flex items-center gap-2 ${
+              activeTab === 'users' ? 'text-spartan-red' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            User Accounts ({loadingUsers ? '...' : usersList.length})
+            {activeTab === 'users' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-spartan-red" />
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('orders'); setEditingProduct(null); }}
+            className={`pb-4 px-6 text-xs font-bold uppercase tracking-wider relative transition-colors cursor-pointer flex items-center gap-2 ${
+              activeTab === 'orders' ? 'text-spartan-red' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Orders Fulfillment ({loadingOrders ? '...' : ordersList.length})
+            {activeTab === 'orders' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-spartan-red" />
             )}
           </button>
@@ -1008,6 +1200,210 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
           </div>
         )}
 
+        {activeTab === 'users' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Registered Customers Section */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-neutral-950 p-4 border border-neutral-900 rounded-xl">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider font-display text-white">Registered Customer Accounts</h3>
+                  <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Manage registered Spartan warriors</p>
+                </div>
+                <div className="relative w-full sm:max-w-xs">
+                  <input
+                    type="text"
+                    placeholder="Search customers by name, email, phone..."
+                    value={usersSearchQuery}
+                    onChange={(e) => setUsersSearchQuery(e.target.value)}
+                    className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded py-2 pl-9 pr-4 text-xs font-semibold text-white focus:outline-none transition-all"
+                  />
+                  <svg className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <button
+                    onClick={fetchUsers}
+                    disabled={loadingUsers}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded bg-neutral-900 border border-neutral-850 hover:border-neutral-800 hover:bg-neutral-800 text-xs font-bold text-neutral-400 hover:text-white transition-all cursor-pointer disabled:opacity-50 uppercase tracking-wider"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${loadingUsers ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+              </div>
+
+              {loadingUsers ? (
+                <div className="flex flex-col items-center justify-center py-20 border border-neutral-900 rounded-xl bg-neutral-950/40">
+                  <Loader2 className="h-8 w-8 animate-spin text-spartan-red" />
+                  <p className="text-xs text-neutral-500 mt-4 font-bold uppercase tracking-wider">Accessing User Registries...</p>
+                </div>
+              ) : usersList.length === 0 ? (
+                <div className="text-center py-16 bg-neutral-950 border border-neutral-900 rounded-xl p-8">
+                  <Users className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
+                  <p className="text-sm text-neutral-400 font-bold uppercase tracking-wide">No Registered Customers Found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-neutral-900 rounded-xl bg-neutral-950/40">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-neutral-900 bg-neutral-950 font-display uppercase text-[10px] tracking-wider text-neutral-500 select-none">
+                        <th className="p-4">Customer Details</th>
+                        <th className="p-4">Contact Phone</th>
+                        <th className="p-4">Full Address</th>
+                        <th className="p-4">Registered Date</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-900 text-sm">
+                      {usersList
+                        .filter(u => 
+                          u.name.toLowerCase().includes(usersSearchQuery.toLowerCase()) ||
+                          u.email.toLowerCase().includes(usersSearchQuery.toLowerCase()) ||
+                          u.contact.toLowerCase().includes(usersSearchQuery.toLowerCase()) ||
+                          u.address.toLowerCase().includes(usersSearchQuery.toLowerCase())
+                        )
+                        .map((user) => (
+                          <tr key={user.id} className="hover:bg-neutral-900/40 transition-colors">
+                            <td className="p-4">
+                              <div className="font-bold text-white uppercase tracking-wide text-xs">{user.name}</div>
+                              <div className="text-xs text-neutral-500 font-semibold">{user.email}</div>
+                            </td>
+                            <td className="p-4 text-neutral-400 text-xs font-semibold">
+                              {user.contact || <span className="text-neutral-600 italic">Not set</span>}
+                            </td>
+                            <td className="p-4 text-neutral-400 text-xs max-w-xs truncate" title={user.address}>
+                              {user.address || <span className="text-neutral-600 italic">Not set</span>}
+                            </td>
+                            <td className="p-4 text-neutral-400 text-xs font-semibold">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 text-spartan-gold shrink-0" />
+                                <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                              </div>
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => setSelectedUser(user)}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded bg-neutral-900 border border-neutral-800 hover:border-spartan-gold text-xs font-bold text-neutral-350 hover:text-spartan-gold transition-all cursor-pointer uppercase tracking-wider"
+                                  title="View Customer Profile"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-spartan-gold" />
+                                  <span>View Profile</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setResetPasswordEmail(user.email);
+                                    setNewPasswordVal('');
+                                    setResetPwError(null);
+                                    setResetPwSuccess(null);
+                                  }}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded bg-neutral-900 border border-neutral-800 hover:border-spartan-red text-xs font-bold text-neutral-355 hover:text-spartan-red transition-all cursor-pointer uppercase tracking-wider"
+                                  title="Override Password"
+                                >
+                                  <Key className="h-3.5 w-3.5 text-spartan-red" />
+                                  <span>Reset PW</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Password Reset Requests Section */}
+            <div className="space-y-4 pt-6 border-t border-neutral-900">
+              <div className="flex justify-between items-center bg-neutral-950 p-4 border border-neutral-900 rounded-xl">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider font-display text-white">Password Reset Requests</h3>
+                  <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Self-service tokens generated by users</p>
+                </div>
+                <div>
+                  <button
+                    onClick={fetchResets}
+                    disabled={loadingResets}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded bg-neutral-900 border border-neutral-850 hover:border-neutral-800 hover:bg-neutral-800 text-xs font-bold text-neutral-400 hover:text-white transition-all cursor-pointer disabled:opacity-50 uppercase tracking-wider"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${loadingResets ? 'animate-spin' : ''}`} />
+                    <span>Refresh Requests</span>
+                  </button>
+                </div>
+              </div>
+
+              {loadingResets ? (
+                <div className="flex flex-col items-center justify-center py-16 border border-neutral-900 rounded-xl bg-neutral-950/40">
+                  <Loader2 className="h-7 w-7 animate-spin text-spartan-red" />
+                  <p className="text-xs text-neutral-500 mt-3 font-bold uppercase tracking-wider">Loading Requests...</p>
+                </div>
+              ) : resetRequests.length === 0 ? (
+                <div className="text-center py-12 bg-neutral-950 border border-neutral-900 rounded-xl p-8">
+                  <AlertTriangle className="h-7 w-7 text-neutral-600 mx-auto mb-2" />
+                  <p className="text-xs text-neutral-500 font-bold uppercase tracking-wide">No Active Reset Requests Found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-neutral-900 rounded-xl bg-neutral-950/40">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-neutral-900 bg-neutral-950 font-display uppercase text-[10px] tracking-wider text-neutral-500 select-none">
+                        <th className="p-4">User Email</th>
+                        <th className="p-4">Date Requested</th>
+                        <th className="p-4">Copyable Reset Link</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-900 text-sm">
+                      {resetRequests.map((req) => (
+                        <tr key={req.id} className="hover:bg-neutral-900/40 transition-colors">
+                          <td className="p-4 font-semibold text-white text-xs">{req.email}</td>
+                          <td className="p-4 text-neutral-400 text-xs font-semibold">
+                            {req.createdAt ? new Date(req.createdAt).toLocaleString() : 'N/A'}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2 max-w-xs sm:max-w-md">
+                              <span className="text-[10px] font-mono text-neutral-500 truncate block flex-1 bg-black px-2 py-1.5 border border-neutral-900 rounded select-all">
+                                {`${window.location.origin}/reset-password?token=${req.token}`}
+                              </span>
+                              <button
+                                onClick={() => handleCopyLink(req.token)}
+                                className="px-3 py-1.5 rounded bg-spartan-gold hover:bg-yellow-600 text-[10px] font-black text-black uppercase tracking-wider flex items-center gap-1 transition-all shrink-0 cursor-pointer"
+                              >
+                                {copiedToken === req.token ? (
+                                  <>
+                                    <Check className="h-3 w-3" />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="h-3 w-3" />
+                                    <span>Copy Link</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="p-4 text-right">
+                            <button
+                              onClick={() => handleDeleteResetRequest(req.token)}
+                              className="px-3 py-1.5 rounded bg-neutral-900 hover:bg-neutral-850 border border-transparent hover:border-neutral-750 text-xs font-bold text-spartan-red transition-all cursor-pointer uppercase tracking-wider flex items-center gap-1 inline-flex"
+                              title="Delete request"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'console' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main system log */}
@@ -1078,7 +1474,457 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
           </div>
         )}
 
+        {activeTab === 'orders' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Orders Header Section */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-neutral-950 p-4 border border-neutral-900 rounded-xl">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider font-display text-white">Supplement Orders Log</h3>
+                <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Dispatch and fulfill client supplement stacks</p>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-end flex-wrap">
+                {/* Search */}
+                <div className="relative w-full sm:max-w-xs">
+                  <input
+                    type="text"
+                    placeholder="Search by ID, Customer Name..."
+                    value={ordersSearchQuery}
+                    onChange={(e) => setOrdersSearchQuery(e.target.value)}
+                    className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded py-2 pl-9 pr-4 text-xs font-semibold text-white focus:outline-none transition-all"
+                  />
+                  <svg className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                {/* Filter */}
+                <select
+                  value={ordersFilterStatus}
+                  onChange={(e) => setOrdersFilterStatus(e.target.value)}
+                  className="bg-black border border-neutral-800 hover:border-neutral-700 text-xs font-bold text-white rounded p-2 focus:outline-none focus:border-spartan-red uppercase tracking-wider cursor-pointer"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                {/* Refresh */}
+                <button
+                  onClick={fetchOrders}
+                  disabled={loadingOrders}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded bg-neutral-900 border border-neutral-850 hover:border-neutral-800 hover:bg-neutral-800 text-xs font-bold text-neutral-400 hover:text-white transition-all cursor-pointer disabled:opacity-50 uppercase tracking-wider"
+                >
+                  <RefreshCw className={`h-3 w-3 ${loadingOrders ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            {loadingOrders ? (
+              <div className="flex flex-col items-center justify-center py-24 border border-neutral-900 rounded-xl bg-neutral-950/40">
+                <Loader2 className="h-8 w-8 animate-spin text-spartan-red" />
+                <p className="text-xs text-neutral-500 mt-4 font-bold uppercase tracking-wider">Accessing Spartan Order vaults...</p>
+              </div>
+            ) : ordersList.length === 0 ? (
+              <div className="text-center py-20 bg-neutral-950 border border-neutral-900 rounded-xl p-8">
+                <ShoppingBag className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
+                <p className="text-sm text-neutral-400 font-bold uppercase tracking-wide">No Orders Logged Yet</p>
+                <p className="text-xs text-neutral-500 mt-1">Order records will populate automatically upon checkout completion.</p>
+              </div>
+            ) : (
+              (() => {
+                const filteredOrders = ordersList.filter(o => {
+                  const matchesStatus = ordersFilterStatus === 'all' || o.status === ordersFilterStatus;
+                  const matchesSearch = o.orderId.toLowerCase().includes(ordersSearchQuery.toLowerCase()) ||
+                    o.fullName.toLowerCase().includes(ordersSearchQuery.toLowerCase()) ||
+                    o.email.toLowerCase().includes(ordersSearchQuery.toLowerCase()) ||
+                    o.phone.toLowerCase().includes(ordersSearchQuery.toLowerCase());
+                  return matchesStatus && matchesSearch;
+                });
+
+                if (filteredOrders.length === 0) {
+                  return (
+                    <div className="text-center py-20 bg-neutral-950 border border-neutral-900 rounded-xl p-8">
+                      <AlertTriangle className="h-8 w-8 text-neutral-600 mx-auto mb-3" />
+                      <p className="text-sm text-neutral-400 font-bold uppercase tracking-wide">No Matching Orders</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="overflow-x-auto border border-neutral-900 rounded-xl bg-neutral-950/40">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-neutral-900 bg-neutral-950 font-display uppercase text-[10px] tracking-wider text-neutral-500 select-none">
+                          <th className="p-4">Order ID</th>
+                          <th className="p-4">Customer Details</th>
+                          <th className="p-4">Date</th>
+                          <th className="p-4">Total Price</th>
+                          <th className="p-4">Payment</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-900 text-sm">
+                        {filteredOrders.map((order) => (
+                          <tr key={order.id} className="hover:bg-neutral-900/40 transition-colors">
+                            <td className="p-4 font-bold text-spartan-gold font-mono">{order.orderId}</td>
+                            <td className="p-4">
+                              <div className="font-bold text-white uppercase tracking-wide text-xs">{order.fullName}</div>
+                              <div className="text-[10px] text-neutral-500 font-semibold">{order.email}</div>
+                              <div className="text-[10px] text-neutral-400 font-medium">{order.phone}</div>
+                            </td>
+                            <td className="p-4 text-neutral-400 text-xs font-semibold">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                            </td>
+                            <td className="p-4 text-xs font-black text-white">
+                              Rs. {order.total.toLocaleString()}
+                            </td>
+                            <td className="p-4 text-[10px] font-bold text-neutral-450 uppercase font-mono">{order.paymentMethod}</td>
+                            <td className="p-4">
+                              <span className={`px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-wider border ${
+                                order.status === 'pending'
+                                  ? 'bg-spartan-red/10 border-spartan-red/20 text-spartan-red'
+                                  : order.status === 'shipped'
+                                    ? 'bg-spartan-gold/10 border-spartan-gold/25 text-spartan-gold'
+                                    : order.status === 'completed'
+                                      ? 'bg-emerald-950/15 border-emerald-900/35 text-emerald-400'
+                                      : 'bg-neutral-900 border-neutral-800 text-neutral-500'
+                              }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => setSelectedOrder(order)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-neutral-900 border border-neutral-800 hover:border-spartan-gold text-xs font-bold text-neutral-350 hover:text-spartan-gold transition-all cursor-pointer uppercase tracking-wider ml-auto"
+                              >
+                                <Wrench className="h-3.5 w-3.5 text-spartan-gold" />
+                                <span>Fulfill Order</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()
+            )}
+          </div>
+        )}
+
       </main>
+
+      {/* 1. VIEW PROFILE DIALOG/DRAWER */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex justify-end transition-opacity duration-300 animate-fade-in">
+          <div className="w-full max-w-md bg-neutral-950 border-l border-neutral-900 h-full p-6 flex flex-col justify-between overflow-y-auto space-y-6 animate-slide-in relative">
+            
+            {/* Header */}
+            <div>
+              <div className="flex justify-between items-center border-b border-neutral-900 pb-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-spartan-gold" />
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider font-display text-white">Customer Profile</h3>
+                    <p className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">MongoDB record details</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="p-1.5 rounded hover:bg-neutral-900 border border-neutral-850 hover:border-neutral-800 text-neutral-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Personal Info */}
+              <div className="space-y-4">
+                <div className="bg-black/40 border border-neutral-900 rounded-lg p-4 space-y-3">
+                  <div>
+                    <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Full Name</span>
+                    <span className="text-xs font-black uppercase text-spartan-gold tracking-wide">{selectedUser.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Email Address</span>
+                    <span className="text-xs font-semibold text-white/90">{selectedUser.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Contact Number</span>
+                    <span className="text-xs font-semibold text-white/95">{selectedUser.contact || 'Not Provided'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider block">Delivery Street Address</span>
+                    <span className="text-xs font-semibold text-white/95 whitespace-pre-wrap">{selectedUser.address || 'Not Provided'}</span>
+                  </div>
+                </div>
+
+                {/* Cart Items */}
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-spartan-gold flex items-center gap-1.5 font-display">
+                    <ShoppingBag className="h-3.5 w-3.5 text-spartan-red" />
+                    <span>Active Cart Items ({selectedUser.cart?.length || 0})</span>
+                  </h4>
+                  {(!selectedUser.cart || selectedUser.cart.length === 0) ? (
+                    <div className="text-[11px] text-neutral-600 bg-black/20 border border-neutral-900 rounded p-3 text-center font-medium italic">
+                      Cart is currently empty.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {selectedUser.cart.map((item: any, idx: number) => {
+                        const product = item.product || products.find(p => p.id === item.productId);
+                        if (!product) return null;
+                        return (
+                          <div key={idx} className="flex items-center gap-2 p-2 bg-black/40 border border-neutral-900 rounded">
+                            <div className="w-8 h-8 rounded bg-black border border-neutral-850 flex items-center justify-center p-1 shrink-0">
+                              <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[11px] font-bold text-white truncate">{product.name}</div>
+                              <div className="text-[9px] text-neutral-500">Rs. {product.price?.toLocaleString()}</div>
+                            </div>
+                            <div className="px-2 py-0.5 rounded bg-spartan-red/10 border border-spartan-red/20 text-[9px] font-bold text-spartan-red shrink-0">
+                              Qty: {item.quantity}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Wishlist Items */}
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-spartan-gold flex items-center gap-1.5 font-display">
+                    <Heart className="h-3.5 w-3.5 text-spartan-red" />
+                    <span>Wishlist Items ({selectedUser.wishlist?.length || 0})</span>
+                  </h4>
+                  {(!selectedUser.wishlist || selectedUser.wishlist.length === 0) ? (
+                    <div className="text-[11px] text-neutral-600 bg-black/20 border border-neutral-900 rounded p-3 text-center font-medium italic">
+                      Wishlist is empty.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {selectedUser.wishlist.map((productId: string) => {
+                        const product = products.find(p => p.id === productId);
+                        if (!product) return null;
+                        return (
+                          <div key={productId} className="flex items-center gap-2 p-2 bg-black/40 border border-neutral-900 rounded">
+                            <div className="w-8 h-8 rounded bg-black border border-neutral-850 flex items-center justify-center p-1 shrink-0">
+                              <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[11px] font-bold text-white truncate">{product.name}</div>
+                              <div className="text-[9px] text-neutral-500">Rs. {product.price?.toLocaleString()}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer / Close Button */}
+            <div className="pt-4 border-t border-neutral-900">
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="w-full py-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-805 hover:border-neutral-750 text-xs font-bold uppercase tracking-wider text-neutral-350 hover:text-white rounded transition-colors cursor-pointer"
+              >
+                Close Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. DIRECT PASSWORD OVERRIDE MODAL */}
+      {resetPasswordEmail && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-neutral-950 border border-neutral-900 rounded-xl p-5 space-y-4 animate-scale-in">
+            <div className="flex justify-between items-center border-b border-neutral-900 pb-3">
+              <div className="flex items-center gap-2 text-spartan-red">
+                <Key className="h-4.5 w-4.5" />
+                <h3 className="text-xs font-bold uppercase tracking-wider font-display">Override Password</h3>
+              </div>
+              <button
+                onClick={() => setResetPasswordEmail(null)}
+                className="p-1 rounded hover:bg-neutral-900 border border-transparent hover:border-neutral-850 text-neutral-500 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleDirectPasswordReset} className="space-y-4">
+              <div className="text-[10px] text-neutral-500 uppercase font-semibold">
+                You are changing the password for: <span className="text-spartan-gold block mt-0.5 break-all text-xs font-bold">{resetPasswordEmail}</span>
+              </div>
+
+              {resetPwError && (
+                <div className="p-2.5 bg-spartan-red/10 border border-spartan-red/20 rounded text-[11px] text-spartan-red flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span>{resetPwError}</span>
+                </div>
+              )}
+
+              {resetPwSuccess && (
+                <div className="p-2.5 bg-emerald-950/20 border border-emerald-900/40 rounded text-[11px] text-emerald-400 flex items-center gap-1.5 animate-pulse">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span>{resetPwSuccess}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wider mb-1">New Password</label>
+                <input
+                  type="password"
+                  required
+                  value={newPasswordVal}
+                  onChange={(e) => setNewPasswordVal(e.target.value)}
+                  placeholder="Enter secure new password"
+                  className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-neutral-900">
+                <button
+                  type="button"
+                  onClick={() => setResetPasswordEmail(null)}
+                  className="px-3.5 py-2 text-[10px] font-bold text-neutral-400 hover:text-white border border-neutral-850 hover:border-neutral-800 rounded bg-neutral-900 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={resettingPw}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded bg-spartan-red hover:bg-spartan-red-dark text-[10px] font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-glow-red uppercase tracking-wider"
+                >
+                  {resettingPw ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Save className="h-3.5 w-3.5" />
+                  )}
+                  <span>Change Password</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3. ADMIN MANAGE ORDER MODAL */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-neutral-950 border border-neutral-900 rounded-xl p-5 space-y-4 animate-scale-in relative max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-neutral-900 pb-3">
+              <div className="flex items-center gap-2 text-spartan-gold">
+                <ShoppingBag className="h-4.5 w-4.5" />
+                <h3 className="text-xs font-bold uppercase tracking-wider font-display">Manage Order: <span className="text-white font-mono">{selectedOrder.orderId}</span></h3>
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="p-1 rounded hover:bg-neutral-900 border border-transparent hover:border-neutral-850 text-neutral-500 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Shipping Address details */}
+              <div className="bg-black/40 border border-neutral-900 rounded-lg p-3 space-y-2 text-xs">
+                <h4 className="text-[10px] text-spartan-gold font-bold uppercase tracking-wider">Shipping & Contact Info</h4>
+                <div>
+                  <span className="text-neutral-500 block font-semibold">Recipient Name:</span>
+                  <span className="text-white font-bold">{selectedOrder.fullName}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 block font-semibold">Contact Phone:</span>
+                  <span className="text-white font-bold">{selectedOrder.phone}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 block font-semibold">Delivery Address:</span>
+                  <span className="text-white font-medium whitespace-pre-wrap">{selectedOrder.address}, {selectedOrder.city}</span>
+                </div>
+                {selectedOrder.notes && (
+                  <div>
+                    <span className="text-neutral-500 block font-semibold">Customer Order Notes:</span>
+                    <span className="text-neutral-300 italic">"{selectedOrder.notes}"</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Items Table */}
+              <div className="space-y-2">
+                <h4 className="text-[10px] text-spartan-gold font-bold uppercase tracking-wider">Items Stack</h4>
+                <div className="border border-neutral-900 rounded bg-black/20 p-2 space-y-2">
+                  {selectedOrder.items.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs py-1 first:pt-0 last:pb-0 border-b border-neutral-900/60 last:border-b-0">
+                      <div className="w-8 h-8 rounded bg-black border border-neutral-850 flex items-center justify-center p-1 shrink-0">
+                        <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-white truncate uppercase tracking-wider">{item.name}</div>
+                        <div className="text-[9px] text-neutral-500">Price: Rs. {item.price.toLocaleString()}</div>
+                      </div>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className="text-neutral-300 font-semibold">Qty: {item.quantity}</span>
+                        <span className="font-bold text-white">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Order total info */}
+              <div className="flex justify-between items-center text-xs bg-neutral-950 p-2 rounded border border-neutral-900">
+                <div className="text-neutral-500">Payment method: <span className="text-white font-bold uppercase font-mono">{selectedOrder.paymentMethod}</span></div>
+                <div className="text-right space-y-0.5">
+                  <div className="text-neutral-500">Subtotal: Rs. {selectedOrder.subtotal?.toLocaleString()}</div>
+                  <div className="text-neutral-500">Shipping: {selectedOrder.shipping === 0 ? "FREE" : `Rs. ${selectedOrder.shipping}`}</div>
+                  <div className="font-bold text-white">Total: <span className="text-spartan-gold">Rs. {selectedOrder.total.toLocaleString()}</span></div>
+                </div>
+              </div>
+
+              {/* Status Update selection */}
+              <div className="pt-2 border-t border-neutral-900 space-y-2">
+                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">Update Order Status</label>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => handleUpdateStatus(selectedOrder.orderId, e.target.value)}
+                    disabled={updatingOrderStatus}
+                    className="flex-1 bg-black border border-neutral-800 hover:border-neutral-700 text-xs font-bold text-white rounded p-2.5 focus:outline-none focus:border-spartan-red uppercase tracking-wider cursor-pointer"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  {updatingOrderStatus && (
+                    <div className="flex items-center justify-center px-3">
+                      <Loader2 className="h-4 w-4 animate-spin text-spartan-red" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-neutral-900">
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="px-4 py-2 text-[10px] font-bold text-neutral-400 hover:text-white border border-neutral-850 hover:border-neutral-850 rounded bg-neutral-900 transition-all cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

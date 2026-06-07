@@ -1,7 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Product } from "@/data/products";
+import {
+  getCurrentUser,
+  loginUser,
+  registerUser,
+  logoutUser,
+  syncCartAndWishlist,
+} from "@/app/actions/userActions";
 
 export interface CartItem {
   product: Product;
@@ -24,44 +31,166 @@ interface CartContextType {
   cartTotal: number;
   cartDrawerOpen: boolean;
   setCartDrawerOpen: (open: boolean) => void;
+  
+  // User Session additions
+  user: any | null;
+  loadingUser: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: any }>;
+  logout: () => Promise<{ success: boolean; error?: string }>;
+  register: (formData: FormData) => Promise<{ success: boolean; error?: string; user?: any }>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+// Helper to merge carts
+const mergeCarts = (local: CartItem[], db: CartItem[]): CartItem[] => {
+  const merged = [...db];
+  for (const localItem of local) {
+    const existing = merged.find((item) => item.product.id === localItem.product.id);
+    if (existing) {
+      existing.quantity += localItem.quantity;
+    } else {
+      merged.push(localItem);
+    }
+  }
+  return merged;
+};
+
+// Helper to merge wishlists
+const mergeWishlists = (local: string[], db: string[]): string[] => {
+  return Array.from(new Set([...db, ...local]));
+};
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  
+  // User auth state
+  const [user, setUser] = useState<any | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const initialLoaded = useRef(false);
 
-  // Load cart and wishlist from localStorage on mount
+  // Load user session and merge with local storage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("spartan_cart");
-    if (savedCart) {
+    async function restoreSession() {
       try {
-        setCartItems(JSON.parse(savedCart));
+        const res = await getCurrentUser();
+        
+        // Retrieve local storage cart and wishlist
+        const savedCart = localStorage.getItem("spartan_cart");
+        const savedWishlist = localStorage.getItem("spartan_wishlist");
+        let localCart: CartItem[] = [];
+        let localWishlist: string[] = [];
+        
+        if (savedCart) {
+          try {
+            localCart = JSON.parse(savedCart);
+          } catch (e) {
+            console.error("Failed to parse local cart items", e);
+          }
+        }
+        if (savedWishlist) {
+          try {
+            localWishlist = JSON.parse(savedWishlist);
+          } catch (e) {
+            console.error("Failed to parse local wishlist", e);
+          }
+        }
+
+        if (res.success && res.user) {
+          const dbCart = res.user.cart || [];
+          const dbWishlist = res.user.wishlist || [];
+          
+          // Merge local and database states
+          const mergedCart = mergeCarts(localCart, dbCart);
+          const mergedWishlist = mergeWishlists(localWishlist, dbWishlist);
+          
+          setCartItems(mergedCart);
+          setWishlist(mergedWishlist);
+          setUser(res.user);
+          
+          // Write merged state back to Database
+          await syncCartAndWishlist(mergedCart, mergedWishlist);
+        } else {
+          // If no logged in user, use local storage cart & wishlist directly
+          setCartItems(localCart);
+          setWishlist(localWishlist);
+        }
       } catch (e) {
-        console.error("Failed to parse cart items", e);
+        console.error("Failed to restore session", e);
+      } finally {
+        setLoadingUser(false);
+        initialLoaded.current = true;
       }
     }
-    const savedWishlist = localStorage.getItem("spartan_wishlist");
-    if (savedWishlist) {
-      try {
-        setWishlist(JSON.parse(savedWishlist));
-      } catch (e) {
-        console.error("Failed to parse wishlist", e);
-      }
-    }
+    restoreSession();
   }, []);
 
-  // Sync to localStorage
+  // Sync state to localStorage (Only after initial load is complete to prevent overwriting with empty defaults)
   useEffect(() => {
+    if (!initialLoaded.current) return;
     localStorage.setItem("spartan_cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   useEffect(() => {
+    if (!initialLoaded.current) return;
     localStorage.setItem("spartan_wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
+
+  // Sync to Database on state changes when logged in (debounced)
+  useEffect(() => {
+    if (!initialLoaded.current || !user) return;
+
+    const delayDebounce = setTimeout(() => {
+      syncCartAndWishlist(cartItems, wishlist);
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [cartItems, wishlist, user]);
+
+  const login = async (email: string, password: string) => {
+    const res = await loginUser(email, password);
+    if (res.success && res.user) {
+      const dbCart = res.user.cart || [];
+      const dbWishlist = res.user.wishlist || [];
+      
+      // Merge active local storage items with newly logged in user DB cart/wishlist
+      const mergedCart = mergeCarts(cartItems, dbCart);
+      const mergedWishlist = mergeWishlists(wishlist, dbWishlist);
+      
+      setCartItems(mergedCart);
+      setWishlist(mergedWishlist);
+      setUser(res.user);
+      
+      // Persist merged state immediately
+      await syncCartAndWishlist(mergedCart, mergedWishlist);
+    }
+    return res;
+  };
+
+  const register = async (formData: FormData) => {
+    const res = await registerUser(formData);
+    if (res.success && res.user) {
+      setUser(res.user);
+      // Sync active local storage items to the newly registered user's record
+      await syncCartAndWishlist(cartItems, wishlist);
+    }
+    return res;
+  };
+
+  const logout = async () => {
+    const res = await logoutUser();
+    if (res.success) {
+      setUser(null);
+      setCartItems([]);
+      setWishlist([]);
+      localStorage.removeItem("spartan_cart");
+      localStorage.removeItem("spartan_wishlist");
+    }
+    return res;
+  };
 
   const addToCart = (product: Product, quantity = 1) => {
     setCartItems((prevItems) => {
@@ -133,6 +262,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cartTotal,
         cartDrawerOpen,
         setCartDrawerOpen,
+        user,
+        loadingUser,
+        login,
+        logout,
+        register,
       }}
     >
       {children}

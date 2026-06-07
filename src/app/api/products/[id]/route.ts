@@ -22,10 +22,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
+    const productIdStr = product.id || product._id.toString();
+    const reviews = await db.collection('reviews').find({ productId: productIdStr }).sort({ createdAt: -1 }).toArray();
+
     const formattedProduct = {
       ...product,
-      id: product.id || product._id.toString(),
-      _id: product._id.toString()
+      id: productIdStr,
+      _id: product._id.toString(),
+      reviews: reviews.map(r => ({
+        id: r._id.toString(),
+        orderId: r.orderId,
+        productId: r.productId,
+        userEmail: r.userEmail,
+        userName: r.userName,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt ? r.createdAt.toISOString() : null
+      }))
     };
 
     return NextResponse.json(formattedProduct);

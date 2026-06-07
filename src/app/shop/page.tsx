@@ -91,7 +91,7 @@ function ShopContent() {
   };
 
   return (
-    <div className="w-full mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+    <div className="w-full mx-auto sm:max-w-[94%] px-4 sm:px-6 lg:px-8 py-6 md:py-12">
       
       {/* Title / Banner */}
       <div className="border-b border-white/5 pb-4 md:pb-8 mb-4 md:mb-10">
@@ -186,19 +186,19 @@ function ShopContent() {
         </aside>
 
         {/* Mobile Filters Trigger */}
-        <div className="w-full flex lg:hidden items-center justify-between gap-4">
+        <div className="w-full grid grid-cols-2 gap-2 sm:gap-4 lg:hidden mb-4">
           <button
             onClick={() => setShowMobileFilters(true)}
-            className="flex items-center gap-2 rounded bg-spartan-gray border border-white/10 px-4 py-2 text-base font-bold uppercase tracking-wider text-white"
+            className="flex items-center justify-center gap-1.5 rounded bg-spartan-gray border border-white/10 px-2 py-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-white w-full transition-colors hover:border-spartan-red/40 cursor-pointer"
           >
-            <SlidersHorizontal className="h-4 w-4 text-spartan-gold" />
-            Filters & Categories
+            <SlidersHorizontal className="h-3.5 w-3.5 text-spartan-gold flex-shrink-0" />
+            <span>Filters</span>
           </button>
           
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-spartan-gray border border-white/10 rounded px-3 py-2 text-sm font-bold uppercase tracking-wider text-white focus:outline-none"
+            className="bg-spartan-gray border border-white/10 rounded px-2 py-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-white focus:outline-none w-full text-center transition-colors hover:border-spartan-red/40 cursor-pointer"
           >
             <option value="default">Sort Default</option>
             <option value="price-low">Price: Low to High</option>

@@ -289,7 +289,7 @@ export default function HomePage() {
           <div className="absolute bottom-1/3 right-1/4 w-2 h-2 bg-spartan-gold rounded-full blur-xs animate-ping" style={{ animationDuration: '6s' }} />
         </div>
 
-        <div className="relative mx-auto w-full max-w-[94%] space-y-6 z-10 pt-2">
+        <div className="relative mx-auto w-full sm:max-w-[94%] space-y-6 z-10 pt-2">
           
           {/* Main Title Badge */}
           <div className="text-center space-y-2">
@@ -510,7 +510,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Delivery Banner + Transparent Spartan Rider (Desktop Only) */}
-            <div className="hidden lg:flex lg:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-visible">
+            <div className="hidden lg:flex lg:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-hidden">
               {/* Subtle red background glow directly on the page background */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               
@@ -794,7 +794,7 @@ export default function HomePage() {
             </div>
 
             {/* Mobile-only Delivery Banner (Warrior Logistics) */}
-            <div className="lg:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[360px] overflow-visible mt-4">
+            <div className="lg:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[360px] overflow-hidden mt-4">
               {/* Subtle red background glow directly on the page background */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               
@@ -852,7 +852,7 @@ export default function HomePage() {
 
       {/* CORE BENEFITS FEATURE */}
       <section className="py-12 bg-spartan-gray border-t border-b border-white/5">
-        <div className="mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full sm:max-w-[94%] px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-center gap-4 p-4 rounded bg-black/45 border border-white/5">
               <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-red/10 border border-spartan-red/30">

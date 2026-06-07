@@ -22,7 +22,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<"description" | "benefits" | "ingredients" | "usage">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "benefits" | "ingredients" | "usage" | "reviews">("description");
 
   // Fetch product and related products
   useEffect(() => {
@@ -91,6 +91,13 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
   const isWishlisted = wishlist.includes(product.id);
 
+  const reviewsList = (product as any).reviews || [];
+  const reviewsCount = reviewsList.length || product.reviewsCount || 0;
+  const averageRating = reviewsList.length > 0 
+    ? (reviewsList.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewsList.length) 
+    : (product.rating || 5);
+  const roundedRating = Math.round(averageRating);
+
   // Image switcher handlers
   const handlePrevImage = () => {
     if (!product || !product.images || product.images.length <= 1) return;
@@ -132,7 +139,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-[94%] px-4 sm:px-6 lg:px-8 py-12 space-y-16 z-10">
+      <div className="relative mx-auto w-full sm:max-w-[94%] px-4 sm:px-6 lg:px-8 py-12 space-y-16 z-10">
         
         {/* Breadcrumbs / Back button */}
         <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-white/50">
@@ -221,10 +228,10 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
               <div className="flex items-center gap-2 mt-3">
                 <div className="flex text-spartan-gold">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                    <Star key={i} className={`h-3.5 w-3.5 ${i < roundedRating ? "fill-current" : "text-white/20"}`} />
                   ))}
                 </div>
-                <span className="text-sm text-white/50">({product.reviewsCount} Customer Reviews)</span>
+                <span className="text-sm text-white/50">({reviewsCount} Customer Reviews)</span>
               </div>
             </div>
 
@@ -375,7 +382,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
         {/* Tabs Section */}
         <div className="bg-spartan-gray/40 border border-white/5 rounded-xl p-6 sm:p-10 space-y-6 backdrop-blur-md">
           <div className="flex flex-wrap border-b border-white/10 gap-2 sm:gap-6">
-            {(["description", "benefits", "ingredients", "usage"] as const).map((tab) => (
+            {(["description", "benefits", "ingredients", "usage", "reviews"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -419,6 +426,59 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
             {activeTab === "usage" && (
               <p>{product.usage}</p>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+                  <div className="text-center bg-black/40 border border-white/5 rounded-lg px-6 py-4">
+                    <div className="text-3xl font-black text-white">{averageRating.toFixed(1)}</div>
+                    <div className="flex text-spartan-gold mt-1 justify-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`h-3.5 w-3.5 ${i < roundedRating ? "fill-current" : "text-white/20"}`} />
+                      ))}
+                    </div>
+                    <div className="text-[10px] text-white/40 uppercase tracking-wider font-bold mt-1.5">{reviewsCount} Reviews</div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold uppercase text-white tracking-wider">Customer Feedback Stacks</h4>
+                    <p className="text-xs text-white/50 mt-1 leading-relaxed">
+                      Verified customer ratings and reviews directly from MongoDB Spartan archives. All reviews represent verified completed purchases.
+                    </p>
+                  </div>
+                </div>
+
+                {reviewsList.length === 0 ? (
+                  <div className="text-center py-10 bg-black/20 border border-white/5 rounded-lg">
+                    <MessageCircle className="h-8 w-8 text-white/30 mx-auto mb-2" />
+                    <p className="text-sm text-white/50 uppercase tracking-wider font-bold">No Reviews Yet</p>
+                    <p className="text-xs text-white/35 mt-1">Be the first to order and leave a review once completed.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    {reviewsList.map((rev: any) => (
+                      <div key={rev.id} className="bg-black/35 border border-white/5 rounded-lg p-4 space-y-2">
+                        <div className="flex justify-between items-start flex-wrap gap-2">
+                          <div>
+                            <span className="text-xs font-black uppercase text-spartan-gold block">{rev.userName}</span>
+                            <span className="text-[9px] text-white/35 font-bold uppercase tracking-wider">
+                              {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex text-spartan-gold">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className={`h-3 w-3 ${i < rev.rating ? "fill-current" : "text-white/20"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs sm:text-sm text-white/80 leading-relaxed italic">
+                          "{rev.comment}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

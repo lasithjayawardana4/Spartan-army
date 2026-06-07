@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import { CreditCard, CheckCircle2, ChevronRight, Truck, ArrowLeft } from "lucide-react";
+import { CreditCard, CheckCircle2, ChevronRight, Truck, ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { placeOrder } from "@/app/actions/userActions";
 
 export default function CheckoutPage() {
-  const { cartItems, cartSubtotal, shipping, cartTotal, clearCart } = useCart();
+  const { cartItems, cartSubtotal, shipping, cartTotal, clearCart, user } = useCart();
   
   // Checkout Form States
   const [formData, setFormData] = useState({
@@ -21,22 +22,70 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "card">("cod");
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Autofill shipping details if user is logged in
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: prev.fullName || user.name || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.contact || "",
+        address: prev.address || user.address || "",
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.phone || !formData.address || !formData.city) {
+    if (!formData.fullName || !formData.phone || !formData.address || !formData.city || !formData.email) {
       alert("Please fill in all required fields.");
       return;
     }
     
-    // Generate a random order number
-    const generatedId = `SPN-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderId(generatedId);
-    setOrderComplete(true);
+    setIsPlacing(true);
+    setErrorMsg(null);
+
+    const orderPayload = {
+      fullName: formData.fullName,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      city: formData.city,
+      notes: formData.notes,
+      paymentMethod,
+      items: cartItems.map(item => ({
+        productId: item.product.id,
+        name: item.product.name,
+        price: item.product.price,
+        image: item.product.image,
+        quantity: item.quantity
+      })),
+      subtotal: cartSubtotal,
+      shipping,
+      total: cartTotal
+    };
+
+    try {
+      const res = await placeOrder(orderPayload);
+      if (res.success && res.orderId) {
+        setOrderId(res.orderId);
+        setOrderComplete(true);
+      } else {
+        setErrorMsg(res.error || "Failed to place order.");
+      }
+    } catch (err) {
+      console.error("Place order failed:", err);
+      setErrorMsg("Connection error. Please try again.");
+    } finally {
+      setIsPlacing(false);
+    }
   };
 
   const handleFinish = () => {
@@ -317,11 +366,23 @@ export default function CheckoutPage() {
                 )}
               </div>
  
+              {errorMsg && (
+                <div className="p-3 bg-spartan-red/10 border border-spartan-red/20 rounded flex items-center gap-2 text-xs text-spartan-red">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full h-12 inline-flex items-center justify-center rounded bg-spartan-red hover:bg-spartan-red-dark text-white text-sm font-bold uppercase tracking-wider transition-all shadow-glow-red hover:shadow-glow-red-heavy cursor-pointer"
+                disabled={isPlacing}
+                className="w-full h-12 inline-flex items-center justify-center rounded bg-spartan-red hover:bg-spartan-red-dark text-white text-sm font-bold uppercase tracking-wider transition-all shadow-glow-red hover:shadow-glow-red-heavy cursor-pointer disabled:opacity-50"
               >
-                Place Order (Rs. {cartTotal.toLocaleString()})
+                {isPlacing ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  `Place Order (Rs. ${cartTotal.toLocaleString()})`
+                )}
               </button>
 
             </form>
