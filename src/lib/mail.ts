@@ -133,3 +133,212 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDER NOTIFICATION EMAILS
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface OrderItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface OrderEmailData {
+  orderId: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  notes?: string;
+  paymentMethod: 'cod' | 'card';
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+}
+
+function createOrderTransporter() {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) return null;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const nodemailer = require('nodemailer');
+  return nodemailer.createTransport({ host, port, secure: port === 465, auth: { user, pass } });
+}
+
+/** Sends a full order + customer details notification to the store admin. */
+export async function sendAdminOrderNotification(order: OrderEmailData): Promise<boolean> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const senderEmail = process.env.SMTP_USER;
+  if (!adminEmail || !senderEmail) {
+    console.warn('[ORDER EMAIL] ADMIN_EMAIL or SMTP_USER not set — skipping admin notification.');
+    return false;
+  }
+  const transporter = createOrderTransporter();
+  if (!transporter) return false;
+
+  const itemRows = order.items.map(item => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;">${item.name}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;text-align:center;">${item.quantity}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;text-align:right;">Rs. ${item.price.toLocaleString()}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #1e1e1e;color:#ffffff;font-size:13px;text-align:right;font-weight:bold;">Rs. ${(item.price * item.quantity).toLocaleString()}</td>
+    </tr>`).join('');
+
+  const html = `
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:0 auto;background:#0a0a0a;color:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #1e1e1e;">
+  <div style="background:linear-gradient(135deg,#1a0000,#2d0000);padding:28px 32px;border-bottom:2px solid #B30000;">
+    <h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#D4AF37;">&#9876; SPARTAN SUPPLEMENTS</h1>
+    <p style="margin:4px 0 0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#B30000;">New Order Alert — Admin Notification</p>
+  </div>
+  <div style="background:#111111;padding:14px 32px;border-bottom:1px solid #1e1e1e;">
+    <span style="font-size:12px;color:#808080;text-transform:uppercase;letter-spacing:1px;">Order ID: </span>
+    <span style="font-size:18px;font-weight:900;color:#D4AF37;letter-spacing:2px;">${order.orderId}</span>
+  </div>
+  <div style="padding:28px 32px;">
+    <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#B30000;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid #1e1e1e;">Customer Details</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr><td style="padding:6px 0;width:40%;color:#808080;font-size:13px;">Full Name</td><td style="padding:6px 0;color:#ffffff;font-size:13px;font-weight:600;">${order.fullName}</td></tr>
+      <tr><td style="padding:6px 0;color:#808080;font-size:13px;">Email</td><td style="padding:6px 0;font-size:13px;"><a href="mailto:${order.email}" style="color:#D4AF37;">${order.email}</a></td></tr>
+      <tr><td style="padding:6px 0;color:#808080;font-size:13px;">Phone</td><td style="padding:6px 0;color:#ffffff;font-size:13px;">${order.phone}</td></tr>
+      <tr><td style="padding:6px 0;color:#808080;font-size:13px;">Delivery Address</td><td style="padding:6px 0;color:#ffffff;font-size:13px;">${order.address}, ${order.city}</td></tr>
+      <tr><td style="padding:6px 0;color:#808080;font-size:13px;">Payment</td><td style="padding:6px 0;font-size:13px;"><span style="background:${order.paymentMethod === 'cod' ? '#B30000' : '#1a472a'};color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;">${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card / Online'}</span></td></tr>
+      ${order.notes ? `<tr><td style="padding:6px 0;color:#808080;font-size:13px;">Notes</td><td style="padding:6px 0;color:#a0a0a0;font-size:13px;font-style:italic;">${order.notes}</td></tr>` : ''}
+    </table>
+    <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#B30000;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid #1e1e1e;">Order Items</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;border:1px solid #1e1e1e;border-radius:6px;overflow:hidden;">
+      <thead><tr style="background:#141414;">
+        <th style="padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;color:#606060;">Product</th>
+        <th style="padding:10px 12px;text-align:center;font-size:11px;text-transform:uppercase;color:#606060;">Qty</th>
+        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;color:#606060;">Unit Price</th>
+        <th style="padding:10px 12px;text-align:right;font-size:11px;text-transform:uppercase;color:#606060;">Line Total</th>
+      </tr></thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+    <div style="background:#111111;border:1px solid #1e1e1e;border-radius:6px;padding:16px 20px;">
+      <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Subtotal</span><span>Rs. ${order.subtotal.toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Shipping</span><span>${order.shipping === 0 ? '<span style="color:#22c55e;font-weight:700;">FREE</span>' : `Rs. ${order.shipping.toLocaleString()}`}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0 0;border-top:1px solid #1e1e1e;margin-top:8px;font-size:15px;font-weight:900;"><span style="color:#ffffff;">ORDER TOTAL</span><span style="color:#D4AF37;">Rs. ${order.total.toLocaleString()}</span></div>
+    </div>
+  </div>
+  <div style="background:#050505;padding:16px 32px;border-top:1px solid #1e1e1e;text-align:center;">
+    <p style="margin:0;font-size:11px;color:#404040;letter-spacing:1px;">SPARTAN SUPPLEMENTS — ADMIN SYSTEM</p>
+  </div>
+</div>`;
+
+  try {
+    await transporter.sendMail({
+      from: `"Spartan Supplements Orders" <${senderEmail}>`,
+      to: adminEmail,
+      subject: `🛒 New Order #${order.orderId} — ${order.fullName} (Rs. ${order.total.toLocaleString()})`,
+      html,
+      text: `New Order #${order.orderId}\nCustomer: ${order.fullName} | ${order.email} | ${order.phone}\nAddress: ${order.address}, ${order.city}\nPayment: ${order.paymentMethod}\nTotal: Rs. ${order.total.toLocaleString()}`
+    });
+    console.log(`[ORDER EMAIL] Admin notification sent for order ${order.orderId}`);
+    return true;
+  } catch (err) {
+    console.error('[ORDER EMAIL] Failed to send admin notification:', err);
+    return false;
+  }
+}
+
+/** Sends an order confirmation + itemised quotation + delivery estimate to the customer. */
+export async function sendCustomerOrderConfirmation(order: OrderEmailData): Promise<boolean> {
+  const senderEmail = process.env.SMTP_USER;
+  if (!senderEmail) return false;
+  const transporter = createOrderTransporter();
+  if (!transporter) return false;
+
+  // Calculate 2–5 working-day delivery window
+  const addWorkingDays = (base: Date, days: number): Date => {
+    let count = 0;
+    const d = new Date(base);
+    while (count < days) {
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() !== 0 && d.getDay() !== 6) count++;
+    }
+    return d;
+  };
+  const today = new Date();
+  const earliest = addWorkingDays(today, 2);
+  const latest   = addWorkingDays(today, 5);
+  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const itemRows = order.items.map(item => `
+    <tr>
+      <td style="padding:12px 14px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;">${item.name}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;text-align:center;">${item.quantity}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid #1e1e1e;color:#d0d0d0;font-size:13px;text-align:right;">Rs. ${item.price.toLocaleString()}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid #1e1e1e;color:#ffffff;font-size:13px;text-align:right;font-weight:700;">Rs. ${(item.price * item.quantity).toLocaleString()}</td>
+    </tr>`).join('');
+
+  const html = `
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:0 auto;background:#0a0a0a;color:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #1e1e1e;">
+  <div style="background:linear-gradient(135deg,#1a0000,#2d0000);padding:32px;text-align:center;border-bottom:2px solid #B30000;">
+    <h1 style="margin:0;font-size:26px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#D4AF37;">&#9876; SPARTAN SUPPLEMENTS</h1>
+    <p style="margin:8px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#B30000;">Order Confirmation &amp; Quotation</p>
+  </div>
+  <div style="padding:28px 32px 0;">
+    <p style="font-size:15px;color:#e0e0e0;margin:0 0 6px;">Hi <strong style="color:#ffffff;">${order.fullName}</strong>,</p>
+    <p style="font-size:14px;color:#a0a0a0;line-height:1.7;margin:0;">Thank you for your order! We have received your request and our team is preparing your supplements. Below is your official quotation and delivery details.</p>
+  </div>
+  <div style="margin:24px 32px 0;background:#111111;border:1px solid #1e1e1e;border-radius:8px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <p style="margin:0;font-size:11px;color:#606060;text-transform:uppercase;letter-spacing:1px;">Order Reference</p>
+      <p style="margin:4px 0 0;font-size:22px;font-weight:900;color:#D4AF37;letter-spacing:2px;">${order.orderId}</p>
+    </div>
+    <span style="background:#1a472a;color:#4ade80;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">&#10003; Confirmed</span>
+  </div>
+  <div style="padding:24px 32px;">
+    <div style="background:linear-gradient(135deg,#0f1a0f,#0a1a0a);border:1px solid #1e3a1e;border-radius:8px;padding:20px;margin-bottom:24px;">
+      <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4ade80;margin:0 0 12px;">Estimated Delivery Window</h2>
+      <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#ffffff;">${fmt(earliest)} &mdash; ${fmt(latest)}</p>
+      <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.6;">Your order will be delivered within <strong style="color:#4ade80;">2&ndash;5 working days</strong>. Our courier will contact you before arrival at <strong style="color:#d0d0d0;">${order.address}, ${order.city}</strong>.</p>
+    </div>
+    <div style="background:#111111;border:1px solid #1e1e1e;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#B30000;margin:0 0 10px;">Payment Method</h2>
+      <span style="background:${order.paymentMethod === 'cod' ? '#B30000' : '#1a472a'};color:#fff;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;">${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card / Online Payment'}</span>
+      ${order.paymentMethod === 'cod'
+        ? `<p style="margin:10px 0 0;font-size:12px;color:#808080;">Please prepare <strong style="color:#ffffff;">Rs. ${order.total.toLocaleString()}</strong> in cash for our courier agent upon delivery.</p>`
+        : `<p style="margin:10px 0 0;font-size:12px;color:#4ade80;font-weight:600;">&#10003; Payment received. Your order is cleared for dispatch.</p>`}
+    </div>
+    <h2 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#B30000;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid #1e1e1e;">Quotation Summary</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;border:1px solid #1e1e1e;border-radius:6px;overflow:hidden;">
+      <thead><tr style="background:#141414;">
+        <th style="padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;color:#606060;">Product</th>
+        <th style="padding:10px 14px;text-align:center;font-size:11px;text-transform:uppercase;color:#606060;">Qty</th>
+        <th style="padding:10px 14px;text-align:right;font-size:11px;text-transform:uppercase;color:#606060;">Unit Price</th>
+        <th style="padding:10px 14px;text-align:right;font-size:11px;text-transform:uppercase;color:#606060;">Amount</th>
+      </tr></thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+    <div style="background:#111111;border:1px solid #1e1e1e;border-radius:6px;padding:16px 20px;margin-bottom:28px;">
+      <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Subtotal</span><span>Rs. ${order.subtotal.toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Shipping &amp; Handling</span><span>${order.shipping === 0 ? '<span style="color:#4ade80;font-weight:700;">FREE</span>' : `Rs. ${order.shipping.toLocaleString()}`}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:1px solid #1e1e1e;margin-top:8px;font-size:16px;font-weight:900;"><span style="color:#ffffff;">TOTAL PAYABLE</span><span style="color:#D4AF37;">Rs. ${order.total.toLocaleString()}</span></div>
+    </div>
+    <p style="font-size:12px;color:#606060;text-align:center;line-height:1.6;margin:0;">Questions? Reply to this email anytime.<br/><strong style="color:#D4AF37;">Spartan Supplements</strong> &mdash; Forge Your Legend.</p>
+  </div>
+  <div style="background:#050505;padding:16px 32px;border-top:1px solid #1e1e1e;text-align:center;">
+    <p style="margin:0;font-size:11px;color:#404040;letter-spacing:1px;">&#169; ${new Date().getFullYear()} SPARTAN SUPPLEMENTS &bull; ALL RIGHTS RESERVED</p>
+  </div>
+</div>`;
+
+  try {
+    await transporter.sendMail({
+      from: `"Spartan Supplements" <${senderEmail}>`,
+      to: order.email,
+      subject: `✅ Order Confirmed #${order.orderId} — Your Quotation & Delivery Details`,
+      html,
+      text: `Order Confirmed! #${order.orderId}\n\nHi ${order.fullName},\nEstimated Delivery: ${fmt(earliest)} – ${fmt(latest)} (2–5 working days)\nAddress: ${order.address}, ${order.city}\nPayment: ${order.paymentMethod}\nTotal: Rs. ${order.total.toLocaleString()}\n\nItems:\n${order.items.map(i => `  - ${i.name} x${i.quantity} = Rs. ${(i.price * i.quantity).toLocaleString()}`).join('\n')}\n\nThank you for choosing Spartan Supplements!`
+    });
+    console.log(`[ORDER EMAIL] Customer confirmation sent to ${order.email} for order ${order.orderId}`);
+    return true;
+  } catch (err) {
+    console.error('[ORDER EMAIL] Failed to send customer confirmation:', err);
+    return false;
+  }
+}

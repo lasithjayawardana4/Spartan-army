@@ -98,6 +98,14 @@ export default function HomePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTestimonialIndex((prev) => (prev === 2 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -827,7 +835,7 @@ export default function HomePage() {
               </div>
 
               {/* Right: Spartan rider image — fitted within bounds, no overflow */}
-              <div className="absolute bottom-0 right-0 w-[50%] h-full flex items-end justify-end pointer-events-none select-none z-10">
+              <div className="absolute bottom-0 right-0 w-[58%] h-full flex items-end justify-end pointer-events-none select-none z-10">
                 <motion.img
                   src="/images/spartan_rider.png"
                   alt="Spartan Delivery Rider"
@@ -851,34 +859,34 @@ export default function HomePage() {
       </section>
 
       {/* CORE BENEFITS FEATURE */}
-      <section className="py-12 bg-spartan-gray border-t border-b border-white/5">
+      <section className="py-12 bg-black border-t border-b border-white/5">
         <div className="mx-auto w-full sm:max-w-[94%] px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center gap-4 p-4 rounded bg-black/45 border border-white/5">
-              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-red/10 border border-spartan-red/30">
+          <div className="flex flex-wrap md:grid md:grid-cols-3 gap-4 md:gap-8 justify-center">
+            <div className="flex items-center gap-4 p-4 rounded bg-zinc-900/50 border border-white/5 w-[calc(50%-8px)] md:w-auto">
+              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-red/10 border border-spartan-red/30 shrink-0">
                 <Shield className="h-6 w-6 text-spartan-red" />
               </div>
               <div>
-                <h3 className="font-bold text-white uppercase tracking-wider text-base">100% Genuine Products</h3>
-                <p className="text-xs sm:text-sm text-white/50">Direct from certified global distributors.</p>
+                <h3 className="font-bold text-white uppercase tracking-wider text-sm sm:text-base">100% Genuine Products</h3>
+                <p className="text-[10px] sm:text-xs text-white/50">Direct from certified distributors.</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 rounded bg-black/45 border border-white/5">
-              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-gold/10 border border-spartan-gold/30">
+            <div className="flex items-center gap-4 p-4 rounded bg-zinc-900/50 border border-white/5 w-[calc(50%-8px)] md:w-auto">
+              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-gold/10 border border-spartan-gold/30 shrink-0">
                 <Award className="h-6 w-6 text-spartan-gold" />
               </div>
               <div>
-                <h3 className="font-bold text-white uppercase tracking-wider text-base">Premium Quality</h3>
-                <p className="text-xs sm:text-sm text-white/50">Elite quality formulas tested for pure results.</p>
+                <h3 className="font-bold text-white uppercase tracking-wider text-sm sm:text-base">Premium Quality</h3>
+                <p className="text-[10px] sm:text-xs text-white/50">Elite formulas tested for pure results.</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 rounded bg-black/45 border border-white/5">
-              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-red/10 border border-spartan-red/30">
+            <div className="flex items-center gap-4 p-4 rounded bg-zinc-900/50 border border-white/5 w-[calc(50%-8px)] md:w-auto">
+              <div className="flex h-12 w-12 items-center justify-center rounded bg-spartan-red/10 border border-spartan-red/30 shrink-0">
                 <Zap className="h-6 w-6 text-spartan-red" />
               </div>
               <div>
-                <h3 className="font-bold text-white uppercase tracking-wider text-base">Expert Guidance</h3>
-                <p className="text-xs sm:text-sm text-white/50">Free coaching advice on your supplement stacks.</p>
+                <h3 className="font-bold text-white uppercase tracking-wider text-sm sm:text-base">Expert Guidance</h3>
+                <p className="text-[10px] sm:text-xs text-white/50">Free coaching on supplement stacks.</p>
               </div>
             </div>
           </div>
@@ -898,7 +906,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Desktop View (Standard Grid) */}
+          <div className="hidden md:grid md:grid-cols-3 gap-8">
             {testimonials.map((t, idx) => (
               <div
                 key={idx}
@@ -920,6 +929,60 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Mobile View (Swipable Auto-Slider) */}
+          <div className="md:hidden relative w-full overflow-hidden px-1">
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.25}
+              onDragEnd={(e, info) => {
+                if (info.offset.x < -50) {
+                  setTestimonialIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
+                } else if (info.offset.x > 50) {
+                  setTestimonialIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
+                }
+              }}
+              animate={{ x: `-${testimonialIndex * 100}%` }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="flex w-full cursor-grab active:cursor-grabbing"
+            >
+              {testimonials.map((t, idx) => (
+                <div key={idx} className="w-full flex-shrink-0 px-2 select-none">
+                  <div className="flex flex-col justify-between p-6 min-h-[220px] rounded-lg bg-spartan-gray border border-white/5 shadow-xl">
+                    <div className="space-y-4">
+                      <div className="flex text-spartan-gold">
+                        {[...Array(t.rating)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 fill-current" />
+                        ))}
+                      </div>
+                      <p className="text-sm sm:text-base text-white/90 italic leading-relaxed font-semibold">
+                        &ldquo;{t.quote}&rdquo;
+                      </p>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-white/5">
+                      <h4 className="font-bold text-white uppercase text-sm tracking-wide">{t.name}</h4>
+                      <span className="text-xs text-spartan-gold font-medium">{t.role}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+            
+            {/* Dots Indicator */}
+            <div className="flex justify-center gap-2 mt-5">
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setTestimonialIndex(idx)}
+                  className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+                    testimonialIndex === idx ? "bg-spartan-red w-5" : "bg-white/20"
+                  }`}
+                  aria-label={`Go to testimonial ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>

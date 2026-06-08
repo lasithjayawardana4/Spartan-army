@@ -249,7 +249,7 @@ export const Navbar = () => {
                 className="h-full w-full object-contain filter drop-shadow-[0_0_10px_rgba(179,0,0,0.95)] drop-shadow-[0_0_3px_rgba(255,255,255,0.45)] transition-all duration-300"
               />
             </div>
-            <span className="text-sm sm:text-xl md:text-2xl font-black tracking-wider uppercase text-white group-hover:text-spartan-red transition-colors duration-300">
+            <span className="hidden sm:inline-block text-xl md:text-2xl font-black tracking-wider uppercase text-white group-hover:text-spartan-red transition-colors duration-300">
               SPARTAN <span className="text-spartan-gold hidden sm:inline">SUPPLEMENTS</span>
             </span>
           </Link>
@@ -337,7 +337,7 @@ export const Navbar = () => {
             {/* Wishlist Link */}
             <Link
               href="/shop?filter=wishlist"
-              className="relative p-2 text-white/80 hover:text-spartan-red transition-colors"
+              className="relative p-2 text-white/80 hover:text-spartan-red transition-colors hidden md:inline-flex"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
@@ -498,6 +498,23 @@ export const Navbar = () => {
               </Link>
             );
           })}
+
+          {/* Wishlist Link inside mobile menu */}
+          <Link
+            href="/shop?filter=wishlist"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
+          >
+            <div className="relative flex items-center">
+              <Heart className="h-4 w-4 text-spartan-gold" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-spartan-red text-[8px] font-bold text-white shadow-[0_0_6px_rgba(179,0,0,0.6)]">
+                  {wishlist.length}
+                </span>
+              )}
+            </div>
+            <span className="ml-0.5">Wishlist</span>
+          </Link>
           
           {/* Mobile User session options */}
           {user ? (

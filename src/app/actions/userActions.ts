@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import { getDb } from '@/lib/mongodb';
-import { sendPasswordResetEmail } from '@/lib/mail';
+import { sendPasswordResetEmail, sendAdminOrderNotification, sendCustomerOrderConfirmation } from '@/lib/mail';
 import { ObjectId } from 'mongodb';
 
 // Helper to hash password using PBKDF2
@@ -554,6 +554,27 @@ export async function placeOrder(orderData: {
         { $set: { cart: [] } }
       );
     }
+
+    // Fire order notification emails (non-blocking — errors are logged, not thrown)
+    const emailPayload = {
+      orderId,
+      fullName: newOrder.fullName,
+      phone: newOrder.phone,
+      email: newOrder.email,
+      address: newOrder.address,
+      city: newOrder.city,
+      notes: newOrder.notes,
+      paymentMethod: newOrder.paymentMethod as 'cod' | 'card',
+      items: newOrder.items,
+      subtotal: newOrder.subtotal,
+      shipping: newOrder.shipping,
+      total: newOrder.total,
+    };
+
+    await Promise.allSettled([
+      sendAdminOrderNotification(emailPayload),
+      sendCustomerOrderConfirmation(emailPayload),
+    ]);
 
     return { success: true, orderId };
   } catch (error: any) {

@@ -28,10 +28,12 @@ h1, h2, h3, h4, h5, h6, .font-viking {
   --foreground: #ffffff;
 }
 
-body {
+html, body {
   background-color: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Glassmorphism panel styling */
