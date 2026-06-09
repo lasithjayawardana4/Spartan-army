@@ -156,6 +156,8 @@ interface OrderEmailData {
   subtotal: number;
   shipping: number;
   total: number;
+  promoCode?: string;
+  discountAmount?: number;
 }
 
 function createOrderTransporter() {
@@ -220,6 +222,7 @@ export async function sendAdminOrderNotification(order: OrderEmailData): Promise
     </table>
     <div style="background:#111111;border:1px solid #1e1e1e;border-radius:6px;padding:16px 20px;">
       <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Subtotal</span><span>Rs. ${order.subtotal.toLocaleString()}</span></div>
+      ${order.discountAmount ? `<div style="display:flex;justify-content:space-between;padding:5px 0;color:#ef4444;font-size:13px;"><span>Discount (${order.promoCode})</span><span>-Rs. ${order.discountAmount.toLocaleString()}</span></div>` : ''}
       <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Shipping</span><span>${order.shipping === 0 ? '<span style="color:#22c55e;font-weight:700;">FREE</span>' : `Rs. ${order.shipping.toLocaleString()}`}</span></div>
       <div style="display:flex;justify-content:space-between;padding:10px 0 0;border-top:1px solid #1e1e1e;margin-top:8px;font-size:15px;font-weight:900;"><span style="color:#ffffff;">ORDER TOTAL</span><span style="color:#D4AF37;">Rs. ${order.total.toLocaleString()}</span></div>
     </div>
@@ -317,6 +320,7 @@ export async function sendCustomerOrderConfirmation(order: OrderEmailData): Prom
     </table>
     <div style="background:#111111;border:1px solid #1e1e1e;border-radius:6px;padding:16px 20px;margin-bottom:28px;">
       <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Subtotal</span><span>Rs. ${order.subtotal.toLocaleString()}</span></div>
+      ${order.discountAmount ? `<div style="display:flex;justify-content:space-between;padding:5px 0;color:#ef4444;font-size:13px;"><span>Discount (${order.promoCode})</span><span>-Rs. ${order.discountAmount.toLocaleString()}</span></div>` : ''}
       <div style="display:flex;justify-content:space-between;padding:5px 0;color:#808080;font-size:13px;"><span>Shipping &amp; Handling</span><span>${order.shipping === 0 ? '<span style="color:#4ade80;font-weight:700;">FREE</span>' : `Rs. ${order.shipping.toLocaleString()}`}</span></div>
       <div style="display:flex;justify-content:space-between;padding:12px 0 0;border-top:1px solid #1e1e1e;margin-top:8px;font-size:16px;font-weight:900;"><span style="color:#ffffff;">TOTAL PAYABLE</span><span style="color:#D4AF37;">Rs. ${order.total.toLocaleString()}</span></div>
     </div>

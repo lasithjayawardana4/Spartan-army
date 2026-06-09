@@ -117,6 +117,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const [stock, setStock] = useState<number>(10);
   const [rating, setRating] = useState<number>(5);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
+  const [promoCode, setPromoCode] = useState('');
+  const [discountPercentage, setDiscountPercentage] = useState<number | ''>('');
 
   // Uploading states
   const [uploadingPrimary, setUploadingPrimary] = useState(false);
@@ -363,6 +365,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setStock(10);
     setRating(5);
     setReviewsCount(0);
+    setPromoCode('');
+    setDiscountPercentage('');
     setFormError(null);
     setFormSuccess(null);
   };
@@ -392,6 +396,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setStock(prod.stock !== undefined ? prod.stock : 0);
     setRating(prod.rating !== undefined ? prod.rating : 5);
     setReviewsCount(prod.reviewsCount !== undefined ? prod.reviewsCount : 0);
+    setPromoCode(prod.promoCode || '');
+    setDiscountPercentage(prod.discountPercentage !== undefined ? prod.discountPercentage : '');
     setFormError(null);
     setFormSuccess(null);
   };
@@ -478,7 +484,9 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
       isPopular,
       stock: Number(stock),
       rating: Number(rating),
-      reviewsCount: Number(reviewsCount)
+      reviewsCount: Number(reviewsCount),
+      promoCode: promoCode.trim().toUpperCase(),
+      discountPercentage: discountPercentage !== '' ? Number(discountPercentage) : undefined
     };
 
     try {
@@ -1111,6 +1119,32 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           placeholder="e.g. Mix 1 scoop with 250ml water 30 minutes before training"
                           className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
                         />
+                      </div>
+
+                      {/* Promo Settings */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Promo Code (Optional)</label>
+                          <input
+                            type="text"
+                            value={promoCode}
+                            onChange={(e) => setPromoCode(e.target.value)}
+                            placeholder="e.g. SPARTAN10"
+                            className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all uppercase font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Discount % (Optional)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={discountPercentage}
+                            onChange={(e) => setDiscountPercentage(e.target.value !== '' ? Number(e.target.value) : '')}
+                            placeholder="e.g. 10"
+                            className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
+                          />
+                        </div>
                       </div>
 
                       {/* Features Specs & Promo Tags */}
@@ -1879,10 +1913,20 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
               </div>
 
               {/* Order total info */}
-              <div className="flex justify-between items-center text-xs bg-neutral-950 p-2 rounded border border-neutral-900">
-                <div className="text-neutral-500">Payment method: <span className="text-white font-bold uppercase font-mono">{selectedOrder.paymentMethod}</span></div>
-                <div className="text-right space-y-0.5">
+              <div className="flex justify-between items-center text-xs bg-neutral-950 p-2.5 rounded border border-neutral-900">
+                <div className="text-neutral-500 font-semibold space-y-1 flex-1">
+                  <div>Payment method: <span className="text-white font-bold uppercase font-mono">{selectedOrder.paymentMethod}</span></div>
+                  {selectedOrder.promoCode && (
+                    <div className="text-emerald-450 flex items-center gap-1 mt-1.5 font-semibold">
+                      <Tag className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> Promo: <span className="text-white font-bold uppercase font-mono bg-emerald-950/40 border border-emerald-900/35 px-1.5 py-0.5 rounded">{selectedOrder.promoCode}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-right space-y-0.5 shrink-0">
                   <div className="text-neutral-500">Subtotal: Rs. {selectedOrder.subtotal?.toLocaleString()}</div>
+                  {selectedOrder.discountAmount > 0 && (
+                    <div className="text-spartan-red font-semibold">Discount: -Rs. {selectedOrder.discountAmount.toLocaleString()}</div>
+                  )}
                   <div className="text-neutral-500">Shipping: {selectedOrder.shipping === 0 ? "FREE" : `Rs. ${selectedOrder.shipping}`}</div>
                   <div className="font-bold text-white">Total: <span className="text-spartan-gold">Rs. {selectedOrder.total.toLocaleString()}</span></div>
                 </div>

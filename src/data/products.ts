@@ -18,6 +18,8 @@ export interface Product {
   isNewArrival?: boolean;
   isPopular?: boolean;
   stock: number;
+  promoCode?: string;
+  discountPercentage?: number;
 }
 
 export interface Category {

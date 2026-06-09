@@ -648,11 +648,15 @@ export default function HomePage() {
                           />
                         </Link>
                         {product.stock <= 0 ? (
-                          <span className="absolute top-3 left-3 bg-zinc-800 border border-zinc-700 text-neutral-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full z-10">
+                          <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-zinc-800 border border-zinc-700 text-neutral-400 text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full z-10">
                             Sold Out
                           </span>
+                        ) : product.promoCode ? (
+                          <span className="absolute top-3 left-3 sm:top-4 sm:left-4 text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full z-10" style={{background:'rgba(212,175,55,0.15)',border:'1px solid rgba(212,175,55,0.55)',color:'#D4AF37',boxShadow:'0 0 10px rgba(212,175,55,0.45), 0 0 20px rgba(212,175,55,0.15)'}}>
+                            🏷️ {product.discountPercentage}% OFF
+                          </span>
                         ) : product.oldPrice ? (
-                          <span className="absolute top-3 left-3 bg-gradient-to-r from-spartan-red to-red-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-spartan-red/30">
+                          <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-gradient-to-r from-spartan-red to-red-600 text-white text-[10px] sm:text-sm font-black uppercase tracking-widest px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-spartan-red/30">
                             Sale
                           </span>
                         ) : null}

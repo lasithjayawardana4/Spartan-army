@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/data/products";
-import { Star, Heart, ShoppingCart, MessageCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Star, Heart, ShoppingCart, MessageCircle, ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, ChevronLeft, Loader2, Tag } from "lucide-react";
 import Link from "next/link";
 
 interface ProductPageProps {
@@ -255,11 +255,24 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                   Low Stock ({product.stock} Left)
                 </span>
               ) : (
-                <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-emerald-600 text-emerald-500">
+                <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-gold/60 text-spartan-gold">
                   In Stock
                 </span>
               )}
             </div>
+
+            {/* Promo Code Info Banner if available */}
+            {product.promoCode && (product.discountPercentage || 0) > 0 && (
+              <div className="flex items-center gap-3.5 p-4 my-4 rounded-lg" style={{background:'rgba(212,175,55,0.06)',border:'1px solid rgba(212,175,55,0.30)',boxShadow:'0 0 18px rgba(212,175,55,0.10), inset 0 0 12px rgba(212,175,55,0.04)'}}>
+                <Tag className="h-5 w-5 shrink-0" style={{color:'#D4AF37'}} />
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider block" style={{color:'#D4AF37'}}>🏷️ Exclusive Promo Available</span>
+                  <span className="text-xs sm:text-sm font-semibold mt-0.5 block leading-relaxed text-white/80">
+                    Apply your promo code at checkout to unlock a <span className="font-bold" style={{color:'#D4AF37'}}>{product.discountPercentage}% discount</span> on this product!
+                  </span>
+                </div>
+              </div>
+            )}
 
             <p className="text-base text-white/70 leading-relaxed">
               {product.shortDescription}

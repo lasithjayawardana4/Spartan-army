@@ -505,6 +505,8 @@ export async function placeOrder(orderData: {
   subtotal: number;
   shipping: number;
   total: number;
+  promoCode?: string;
+  discountAmount?: number;
 }) {
   try {
     const db = await getDb();
@@ -541,6 +543,8 @@ export async function placeOrder(orderData: {
       subtotal: Number(orderData.subtotal),
       shipping: Number(orderData.shipping),
       total: Number(orderData.total),
+      promoCode: orderData.promoCode || null,
+      discountAmount: Number(orderData.discountAmount || 0),
       status: 'pending', // pending, shipped, completed, cancelled
       createdAt: new Date()
     };
@@ -569,6 +573,8 @@ export async function placeOrder(orderData: {
       subtotal: newOrder.subtotal,
       shipping: newOrder.shipping,
       total: newOrder.total,
+      promoCode: newOrder.promoCode || undefined,
+      discountAmount: newOrder.discountAmount || undefined,
     };
 
     await Promise.allSettled([

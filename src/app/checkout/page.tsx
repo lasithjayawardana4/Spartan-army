@@ -25,6 +25,20 @@ export default function CheckoutPage() {
   const [isPlacing, setIsPlacing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Promo Code States
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoSuccess, setPromoSuccess] = useState<string | null>(null);
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [finalTotal, setFinalTotal] = useState(0);
+
+  // Dynamic Calculations
+  const discountedSubtotal = cartSubtotal - discountAmount;
+  const currentShipping = discountedSubtotal > 15000 || discountedSubtotal === 0 ? 0 : 500;
+  const currentTotal = discountedSubtotal + currentShipping;
+
   // Autofill shipping details if user is logged in
   useEffect(() => {
     if (user) {
@@ -40,6 +54,49 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleApplyPromo = () => {
+    setPromoError(null);
+    setPromoSuccess(null);
+
+    if (!promoInput.trim()) {
+      setPromoError("Please enter a promo code.");
+      return;
+    }
+
+    const code = promoInput.trim().toUpperCase();
+    let totalDiscount = 0;
+    let matchingItemsCount = 0;
+
+    cartItems.forEach((item) => {
+      if (item.product.promoCode && item.product.promoCode.trim().toUpperCase() === code) {
+        const pct = Number(item.product.discountPercentage || 0);
+        if (pct > 0) {
+          const discountPerUnit = item.product.price * (pct / 100);
+          totalDiscount += discountPerUnit * item.quantity;
+          matchingItemsCount++;
+        }
+      }
+    });
+
+    if (matchingItemsCount > 0 && totalDiscount > 0) {
+      setAppliedPromo(code);
+      setDiscountAmount(totalDiscount);
+      setPromoApplied(true);
+      setPromoSuccess(`Code ${code} applied successfully! Saved Rs. ${totalDiscount.toLocaleString()}`);
+    } else {
+      setPromoError("This promo code is invalid or does not apply to any items in your cart.");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoInput("");
+    setAppliedPromo(null);
+    setDiscountAmount(0);
+    setPromoApplied(false);
+    setPromoSuccess(null);
+    setPromoError(null);
   };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
@@ -68,14 +125,17 @@ export default function CheckoutPage() {
         quantity: item.quantity
       })),
       subtotal: cartSubtotal,
-      shipping,
-      total: cartTotal
+      shipping: currentShipping,
+      total: currentTotal,
+      promoCode: appliedPromo || undefined,
+      discountAmount: discountAmount
     };
 
     try {
       const res = await placeOrder(orderPayload);
       if (res.success && res.orderId) {
         setOrderId(res.orderId);
+        setFinalTotal(currentTotal);
         setOrderComplete(true);
       } else {
         setErrorMsg(res.error || "Failed to place order.");
@@ -140,10 +200,10 @@ export default function CheckoutPage() {
                 Online Card Payment Confirmed
               </div>
               <p className="text-sm text-white/70 leading-relaxed">
-                Thank you! Your online transaction of <span className="text-white font-bold">Rs. {cartTotal.toLocaleString()}</span> has been securely authorized and completed via PayPal gateways.
+                Thank you! Your online transaction of <span className="text-white font-bold">Rs. {finalTotal.toLocaleString()}</span> has been securely authorized and completed via PayPal gateways.
               </p>
               <div className="border-t border-white/5 pt-3 text-xs text-white/40">
-                Payment Status: <span className="text-emerald-400 font-bold uppercase">Paid & Confirmed</span>
+                Payment Status: <span className="font-bold uppercase" style={{color:'#D4AF37'}}>Paid & Confirmed</span>
               </div>
             </div>
           ) : (
@@ -153,7 +213,7 @@ export default function CheckoutPage() {
                 Cash on Delivery (COD)
               </div>
               <p className="text-sm text-white/70 leading-relaxed">
-                Your order of <span className="text-white font-bold">Rs. {cartTotal.toLocaleString()}</span> will be delivered to <span className="text-white font-bold">{formData.address}, {formData.city}</span>. Please prepare the exact cash amount for our courier agent.
+                Your order of <span className="text-white font-bold">Rs. {finalTotal.toLocaleString()}</span> will be delivered to <span className="text-white font-bold">{formData.address}, {formData.city}</span>. Please prepare the exact cash amount for our courier agent.
               </p>
             </div>
           )}
@@ -381,7 +441,7 @@ export default function CheckoutPage() {
                 {isPlacing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  `Place Order (Rs. ${cartTotal.toLocaleString()})`
+                  `Place Order (Rs. ${currentTotal.toLocaleString()})`
                 )}
               </button>
 
@@ -408,22 +468,90 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
- 
-            {/* Calculations */}
-            <div className="border-t border-white/5 pt-4 space-y-2.5 text-sm">
-              <div className="flex justify-between text-white/70">
-                <span>Subtotal</span>
-                <span>Rs. {cartSubtotal.toLocaleString()}</span>
+              {/* Promo Code Section - Gold Glow Treasure */}
+              <div className="border-t border-white/5 pt-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black uppercase tracking-widest" style={{color:'#D4AF37'}}>🏆 Promo Code</span>
+                  <div className="flex-1 h-px" style={{background:'linear-gradient(90deg, rgba(212,175,55,0.5), transparent)'}} />
+                </div>
+                <div
+                  className="relative rounded-lg p-[1px] transition-all duration-500"
+                  style={{
+                    background: promoApplied
+                      ? 'linear-gradient(135deg, rgba(212,175,55,0.8), rgba(212,175,55,0.2), rgba(212,175,55,0.8))'
+                      : 'linear-gradient(135deg, rgba(212,175,55,0.35), rgba(212,175,55,0.08), rgba(212,175,55,0.35))',
+                    boxShadow: promoApplied
+                      ? '0 0 22px rgba(212,175,55,0.40), 0 0 45px rgba(212,175,55,0.15)'
+                      : '0 0 12px rgba(212,175,55,0.18)'
+                  }}
+                >
+                  <div className="flex rounded-lg overflow-hidden" style={{background:'#0d0d0d'}}>
+                    <input
+                      type="text"
+                      placeholder="Have a promo code? Enter here..."
+                      value={promoInput}
+                      onChange={(e) => setPromoInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (!promoApplied) handleApplyPromo(); } }}
+                      disabled={promoApplied}
+                      className="flex-1 bg-transparent px-4 py-3 text-sm font-bold focus:outline-none disabled:opacity-60 placeholder:text-white/25 placeholder:font-normal placeholder:tracking-normal min-w-0"
+                      style={{color: promoApplied ? '#D4AF37' : 'white', letterSpacing: promoApplied ? '0.12em' : 'normal'}}
+                    />
+                    {promoApplied ? (
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="px-3 sm:px-4 py-2 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer border-l border-white/5 whitespace-nowrap"
+                        style={{color:'rgba(255,255,255,0.4)', background:'transparent'}}
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        className="px-4 sm:px-5 py-2 text-xs font-black uppercase tracking-widest cursor-pointer border-l whitespace-nowrap"
+                        style={{background:'rgba(212,175,55,0.12)', borderColor:'rgba(212,175,55,0.25)', color:'#D4AF37'}}
+                      >
+                        Apply
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {promoError && (
+                  <div className="text-xs text-spartan-red flex items-center gap-1.5 font-semibold">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    <span>{promoError}</span>
+                  </div>
+                )}
+                {promoSuccess && (
+                  <div className="text-xs flex items-center gap-1.5 font-bold" style={{color:'#D4AF37'}}>
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                    <span>{promoSuccess}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between text-white/70">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? <span className="text-green-500 font-semibold">FREE</span> : `Rs. ${shipping}`}</span>
+
+              {/* Calculations */}
+              <div className="border-t border-white/5 pt-4 space-y-2.5 text-sm">
+                <div className="flex justify-between text-white/70">
+                  <span>Subtotal</span>
+                  <span>Rs. {cartSubtotal.toLocaleString()}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-spartan-red font-semibold">
+                    <span>Discount ({appliedPromo})</span>
+                    <span>-Rs. {discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-white/70">
+                  <span>Shipping</span>
+                  <span>{currentShipping === 0 ? <span className="font-bold" style={{color:'#D4AF37'}}>FREE</span> : `Rs. ${currentShipping}`}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold text-white pt-2.5 border-t border-white/5">
+                  <span>Total</span>
+                  <span className="text-spartan-gold">Rs. {currentTotal.toLocaleString()}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-base font-bold text-white pt-2.5 border-t border-white/5">
-                <span>Total</span>
-                <span className="text-spartan-gold">Rs. {cartTotal.toLocaleString()}</span>
-              </div>
-            </div>
 
           </aside>
 

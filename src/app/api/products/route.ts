@@ -57,6 +57,8 @@ export async function POST(req: Request) {
       isNewArrival: !!data.isNewArrival,
       isPopular: !!data.isPopular,
       stock: Number(data.stock || 0),
+      promoCode: data.promoCode ? data.promoCode.trim().toUpperCase() : undefined,
+      discountPercentage: data.discountPercentage ? Number(data.discountPercentage) : undefined,
       createdAt: new Date()
     };
 

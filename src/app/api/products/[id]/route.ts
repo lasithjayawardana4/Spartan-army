@@ -83,6 +83,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       isNewArrival: !!data.isNewArrival,
       isPopular: !!data.isPopular,
       stock: Number(data.stock || 0),
+      promoCode: data.promoCode ? data.promoCode.trim().toUpperCase() : undefined,
+      discountPercentage: data.discountPercentage ? Number(data.discountPercentage) : undefined,
       updatedAt: new Date()
     };
 
