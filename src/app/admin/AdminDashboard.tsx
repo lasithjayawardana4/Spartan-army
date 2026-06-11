@@ -509,17 +509,17 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const handleEditProduct = (prod: Product) => {
     setIsNewProduct(false);
     setEditingProduct(prod);
-    setName(prod.name || '');
-    setCategory(prod.category || '');
-    setPrice(prod.price || '');
-    setOldPrice(prod.oldPrice !== undefined ? prod.oldPrice : '');
-    setImage(prod.image || '');
+    setName(prod.name ?? '');
+    setCategory(prod.category ?? '');
+    setPrice(prod.price ?? '');
+    setOldPrice(prod.oldPrice ?? '');
+    setImage(prod.image ?? '');
     setImagesText(Array.isArray(prod.images) ? prod.images.join('\n') : '');
-    setDescription(prod.description || '');
-    setShortDescription(prod.shortDescription || '');
+    setDescription(prod.description ?? '');
+    setShortDescription(prod.shortDescription ?? '');
     setBenefitsText(Array.isArray(prod.benefits) ? prod.benefits.join('\n') : '');
     setIngredientsText(Array.isArray(prod.ingredients) ? prod.ingredients.join(', ') : '');
-    setUsage(prod.usage || '');
+    setUsage(prod.usage ?? '');
     setFeaturesText(
       Array.isArray(prod.features) 
         ? prod.features.map((f: any) => `${f.label}: ${f.value}`).join('\n') 
@@ -528,11 +528,11 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setIsBestSeller(!!prod.isBestSeller);
     setIsNewArrival(!!prod.isNewArrival);
     setIsPopular(!!prod.isPopular);
-    setStock(prod.stock !== undefined ? prod.stock : 0);
-    setRating(prod.rating !== undefined ? prod.rating : 5);
-    setReviewsCount(prod.reviewsCount !== undefined ? prod.reviewsCount : 0);
-    setPromoCode(prod.promoCode || '');
-    setDiscountPercentage(prod.discountPercentage !== undefined ? prod.discountPercentage : '');
+    setStock(prod.stock ?? 0);
+    setRating(prod.rating ?? 5);
+    setReviewsCount(prod.reviewsCount ?? 0);
+    setPromoCode(prod.promoCode ?? '');
+    setDiscountPercentage(prod.discountPercentage ?? '');
     setFlavors(Array.isArray(prod.flavors) ? prod.flavors : []);
     setFormError(null);
     setFormSuccess(null);
@@ -1026,7 +1026,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                         <input
                           type="text"
                           required
-                          value={name}
+                          value={name ?? ''}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="e.g. Spartan Whey Protein 2lb"
                           className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1054,7 +1054,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           <input
                             type="number"
                             min="0"
-                            value={stock}
+                            value={stock ?? ''}
                             onChange={(e) => setStock(Number(e.target.value))}
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
                           />
@@ -1069,7 +1069,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                             type="number"
                             required
                             min="1"
-                            value={price}
+                            value={price ?? ''}
                             onChange={(e) => setPrice(e.target.value !== '' ? Number(e.target.value) : '')}
                             placeholder="e.g. 13500"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1080,7 +1080,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           <input
                             type="number"
                             min="0"
-                            value={oldPrice}
+                            value={oldPrice ?? ''}
                             onChange={(e) => setOldPrice(e.target.value !== '' ? Number(e.target.value) : '')}
                             placeholder="e.g. 15000"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1125,14 +1125,14 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                             <div className="relative flex-1">
                               <input
                                 type="text"
-                                value={image}
+                                value={image ?? ''}
                                 onChange={(e) => setImage(e.target.value)}
                                 placeholder="Direct web link to image (e.g. /uploads/filename.webp)"
                                 className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 pl-8 text-xs text-white focus:outline-none transition-all"
                               />
                               <ImageIcon className="h-3.5 w-3.5 text-neutral-500 absolute left-2.5 top-3.5" />
                             </div>
-                            {image.trim() && (
+                            {image && image.trim() && (
                               <div className="w-[38px] h-[38px] rounded border border-neutral-800 bg-black flex items-center justify-center p-0.5 overflow-hidden shrink-0">
                                 <img src={image} alt="Preview" className="max-h-full max-w-full object-contain" />
                               </div>
@@ -1161,7 +1161,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                         <div className="space-y-2">
                           <textarea
                             rows={3}
-                            value={imagesText}
+                            value={imagesText ?? ''}
                             onChange={(e) => setImagesText(e.target.value)}
                             placeholder="Paste additional gallery links here (one URL per line) or upload files..."
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white font-mono focus:outline-none transition-all"
@@ -1184,7 +1184,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                             min="1"
                             max="5"
                             step="0.1"
-                            value={rating}
+                            value={rating ?? ''}
                             onChange={(e) => setRating(Number(e.target.value))}
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
                           />
@@ -1194,7 +1194,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           <input
                             type="number"
                             min="0"
-                            value={reviewsCount}
+                            value={reviewsCount ?? ''}
                             onChange={(e) => setReviewsCount(Number(e.target.value))}
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
                           />
@@ -1260,12 +1260,12 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                         </div>
                       </div>
 
-                      {/* Usage */}
+                       {/* Usage */}
                       <div>
                         <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Recommended Usage</label>
                         <input
                           type="text"
-                          value={usage}
+                          value={usage ?? ''}
                           onChange={(e) => setUsage(e.target.value)}
                           placeholder="e.g. Mix 1 scoop with 250ml water 30 minutes before training"
                           className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1278,7 +1278,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Promo Code (Optional)</label>
                           <input
                             type="text"
-                            value={promoCode}
+                            value={promoCode ?? ''}
                             onChange={(e) => setPromoCode(e.target.value)}
                             placeholder="e.g. SPARTAN10"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all uppercase font-semibold"
@@ -1290,7 +1290,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                             type="number"
                             min="0"
                             max="100"
-                            value={discountPercentage}
+                            value={discountPercentage ?? ''}
                             onChange={(e) => setDiscountPercentage(e.target.value !== '' ? Number(e.target.value) : '')}
                             placeholder="e.g. 10"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
