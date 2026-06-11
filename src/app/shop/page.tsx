@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { CATEGORIES, Product } from "@/data/products";
@@ -21,6 +21,11 @@ function ShopContent() {
   const [sortBy, setSortBy] = useState<string>("default");
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [showWishlistOnly, setShowWishlistOnly] = useState<boolean>(false);
+
+  // Infinite Scroll State
+  const [visibleCount, setVisibleCount] = useState<number>(12);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   // Sync with URL query parameters on mount or change
   useEffect(() => {
@@ -55,6 +60,11 @@ function ShopContent() {
       });
   }, []);
 
+  // Reset pagination on filter or sort change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [selectedCategory, priceRange, sortBy, searchQuery, showWishlistOnly]);
+
   // Filter & Sort Logic
   const filteredProducts = products.filter((product) => {
     // 1. Category Filter
@@ -81,6 +91,36 @@ function ShopContent() {
     if (sortBy === "new-arrivals") return (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0);
     return 0; // Default
   });
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+
+  // Infinite Scroll Observer Setup
+  useEffect(() => {
+    if (loadingProducts) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 12, filteredProducts.length));
+        }
+      },
+      {
+        rootMargin: "200px",
+      }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [loadingProducts, filteredProducts.length]);
 
   const resetFilters = () => {
     setSelectedCategory("all");
@@ -334,8 +374,9 @@ function ShopContent() {
               </button>
             </div>
           ) : (
+          <>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-              {filteredProducts.map((product) => {
+              {visibleProducts.map((product) => {
                 const isWishlisted = wishlist.includes(product.id);
                 return (
                   <div
@@ -471,7 +512,13 @@ function ShopContent() {
                 );
               })}
             </div>
-          )}
+            {visibleCount < filteredProducts.length && (
+              <div ref={sentinelRef} className="w-full flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-spartan-red" />
+              </div>
+            )}
+          </>
+        )}
         </div>
       </div>
     </div>

@@ -1209,7 +1209,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                         <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Short Description</label>
                         <textarea
                           rows={2}
-                          value={shortDescription}
+                          value={shortDescription ?? ''}
                           onChange={(e) => setShortDescription(e.target.value)}
                           placeholder="Brief tagline showing below pricing..."
                           className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1223,7 +1223,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                         </label>
                         <textarea
                           rows={3}
-                          value={description}
+                          value={description ?? ''}
                           onChange={(e) => setDescription(e.target.value)}
                           placeholder="Detailed paragraphs explaining the benefits..."
                           className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1239,7 +1239,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           </label>
                           <textarea
                             rows={3}
-                            value={benefitsText}
+                            value={benefitsText ?? ''}
                             onChange={(e) => setBenefitsText(e.target.value)}
                             placeholder="e.g. Muscle Repair&#10;Lean Growth"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1252,7 +1252,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           </label>
                           <textarea
                             rows={3}
-                            value={ingredientsText}
+                            value={ingredientsText ?? ''}
                             onChange={(e) => setIngredientsText(e.target.value)}
                             placeholder="e.g. Creatine Monohydrate, Whey Concentrate"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white focus:outline-none transition-all"
@@ -1307,7 +1307,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                           </label>
                           <textarea
                             rows={3}
-                            value={featuresText}
+                            value={featuresText ?? ''}
                             onChange={(e) => setFeaturesText(e.target.value)}
                             placeholder="e.g. Servings: 30&#10;Protein: 24g&#10;Carbs: 3g"
                             className="w-full bg-black border border-neutral-800 hover:border-neutral-700 focus:border-spartan-red rounded p-2.5 text-xs text-white font-mono focus:outline-none transition-all"
@@ -2384,7 +2384,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                 <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">Update Order Status</label>
                 <div className="flex gap-2">
                   <select
-                    value={selectedOrder.status}
+                    value={selectedOrder.status ?? 'pending'}
                     onChange={(e) => handleUpdateStatus(selectedOrder.orderId, e.target.value)}
                     disabled={updatingOrderStatus}
                     className="flex-1 bg-black border border-neutral-800 hover:border-neutral-700 text-xs font-bold text-white rounded p-2.5 focus:outline-none focus:border-spartan-red uppercase tracking-wider cursor-pointer"
