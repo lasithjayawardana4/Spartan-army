@@ -21,13 +21,48 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedFlavor, setSelectedFlavor] = useState<any | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"description" | "benefits" | "ingredients" | "usage" | "reviews">("description");
+  const [promoApplied, setPromoApplied] = useState<boolean>(false);
+  const [promoInput, setPromoInput] = useState<string>("");
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  const handleApplyProductPromo = () => {
+    if (!product) return;
+    setPromoError(null);
+
+    if (promoApplied) {
+      setPromoApplied(false);
+      setPromoInput("");
+      localStorage.removeItem("applied_promo_code");
+      return;
+    }
+
+    if (!promoInput.trim()) {
+      setPromoError("Please enter a promo code.");
+      return;
+    }
+
+    const inputCode = promoInput.trim().toUpperCase();
+    const correctCode = product.promoCode?.trim().toUpperCase();
+
+    if (correctCode && inputCode === correctCode) {
+      setPromoApplied(true);
+      localStorage.setItem("applied_promo_code", correctCode);
+    } else {
+      setPromoError("Invalid promo code. Please check and try again.");
+    }
+  };
 
   // Fetch product and related products
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setPromoApplied(false);
+    setPromoInput("");
+    setPromoError(null);
+    localStorage.removeItem("applied_promo_code");
 
     fetch(`/api/products/${id}`)
       .then((res) => {
@@ -37,6 +72,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
       .then((data) => {
         if (active) {
           setProduct(data);
+          setSelectedFlavor(null);
           setSelectedImage(data.image || "");
           
           // Fetch related products
@@ -89,6 +125,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
     );
   }
 
+  const basePrice = selectedFlavor ? selectedFlavor.price : product.price;
   const isWishlisted = wishlist.includes(product.id);
 
   const reviewsList = (product as any).reviews || [];
@@ -122,7 +159,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity);
+    addToCart(product, quantity, selectedFlavor || undefined);
     router.push("/checkout");
   };
 
@@ -238,11 +275,11 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             {/* Pricing */}
             <div className="flex items-center flex-wrap gap-3 border-b border-white/5 pb-4">
               <span className="text-2xl sm:text-3xl font-black text-white">
-                Rs. {product.price.toLocaleString()}
+                Rs. {(promoApplied ? basePrice * (1 - Number(product.discountPercentage || 0) / 100) : basePrice).toLocaleString()}
               </span>
-              {product.oldPrice && (
+              {(product.oldPrice || promoApplied) && (
                 <span className="text-sm text-white/40 line-through">
-                  Rs. {product.oldPrice.toLocaleString()}
+                  Rs. {(promoApplied ? basePrice : product.oldPrice || 0).toLocaleString()}
                 </span>
               )}
               {/* Stock Status Badge */}
@@ -263,14 +300,60 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
             {/* Promo Code Info Banner if available */}
             {product.promoCode && (product.discountPercentage || 0) > 0 && (
-              <div className="flex items-center gap-3.5 p-4 my-4 rounded-lg" style={{background:'rgba(212,175,55,0.06)',border:'1px solid rgba(212,175,55,0.30)',boxShadow:'0 0 18px rgba(212,175,55,0.10), inset 0 0 12px rgba(212,175,55,0.04)'}}>
-                <Tag className="h-5 w-5 shrink-0" style={{color:'#D4AF37'}} />
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider block" style={{color:'#D4AF37'}}>🏷️ Exclusive Promo Available</span>
-                  <span className="text-xs sm:text-sm font-semibold mt-0.5 block leading-relaxed text-white/80">
-                    Apply your promo code at checkout to unlock a <span className="font-bold" style={{color:'#D4AF37'}}>{product.discountPercentage}% discount</span> on this product!
-                  </span>
+              <div className="flex flex-col gap-4 p-5 my-4 rounded-lg" style={{background:'rgba(212,175,55,0.06)',border:'1px solid rgba(212,175,55,0.30)',boxShadow:'0 0 18px rgba(212,175,55,0.10), inset 0 0 12px rgba(212,175,55,0.04)'}}>
+                <div className="flex items-start gap-3.5">
+                  <Tag className="h-5 w-5 shrink-0 mt-0.5" style={{color:'#D4AF37'}} />
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider block" style={{color:'#D4AF37'}}>🏷️ Exclusive Promo Available</span>
+                    <span className="text-xs sm:text-sm font-semibold mt-0.5 block leading-relaxed text-white/80">
+                      Enter your promo code to unlock a <span className="font-bold" style={{color:'#D4AF37'}}>{product.discountPercentage}% discount</span> on this product!
+                    </span>
+                    <span className="text-[10px] text-white/40 font-bold block mt-1">
+                      *(Discount limited to a maximum of 2 units of this product per order)
+                    </span>
+                  </div>
                 </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1 rounded overflow-hidden border border-white/10 focus-within:border-spartan-gold bg-black">
+                    <input
+                      type="text"
+                      placeholder="Enter promo code"
+                      value={promoApplied ? "PROMO ACTIVE" : promoInput}
+                      onChange={(e) => setPromoInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (!promoApplied) handleApplyProductPromo();
+                        }
+                      }}
+                      disabled={promoApplied}
+                      className="w-full bg-transparent px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider focus:outline-none disabled:opacity-60 placeholder:text-white/20 placeholder:font-normal placeholder:tracking-normal text-white"
+                      style={{ color: promoApplied ? '#D4AF37' : 'white' }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApplyProductPromo}
+                    className="px-6 py-2.5 text-xs font-black uppercase tracking-widest text-black rounded transition-all duration-300 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.4)] hover:shadow-[0_0_25px_rgba(212,175,55,0.8)] border border-spartan-gold hover:border-white font-bold select-none active:scale-[0.97]"
+                    style={{
+                      backgroundColor: promoApplied ? '#ffffff' : '#D4AF37',
+                      color: '#000000',
+                    }}
+                  >
+                    {promoApplied ? "Remove Promo" : "Apply Code"}
+                  </button>
+                </div>
+                {promoError && (
+                  <div className="text-xs text-spartan-red flex items-center gap-1.5 font-semibold">
+                    <span>{promoError}</span>
+                  </div>
+                )}
+                {promoApplied && (
+                  <div className="text-xs flex items-center gap-1.5 font-bold" style={{color:'#D4AF37'}}>
+                    <span>✓ Promo applied successfully! (Max 2 units discounted at checkout)</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -287,6 +370,47 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                     <span className="text-white font-bold">{feat.value}</span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Flavor Selection */}
+            {product.flavors && product.flavors.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <span className="text-xs font-black uppercase tracking-widest text-spartan-gold block">
+                  Select Formulation Flavor
+                </span>
+                <div className="flex flex-wrap gap-2.5">
+                  {product.flavors.map((flv) => {
+                    const isSelected = selectedFlavor?.name === flv.name;
+                    return (
+                      <button
+                        key={flv.name}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedFlavor(null);
+                            setSelectedImage(product.image || "");
+                          } else {
+                            setSelectedFlavor(flv);
+                            if (flv.image) {
+                              setSelectedImage(flv.image);
+                            }
+                          }
+                        }}
+                        className={`px-4 py-2.5 rounded border text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "bg-spartan-red border-spartan-red text-white shadow-glow-red"
+                            : "bg-white/5 border-white/10 text-white/80 hover:border-white/30 hover:bg-white/10"
+                        }`}
+                      >
+                        {flv.name}
+                        <span className={`block text-[9px] mt-0.5 font-black tracking-widest ${isSelected ? "text-spartan-gold" : "text-white/40"}`}>
+                          Rs. {flv.price.toLocaleString()}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -320,7 +444,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                 {/* Add to Cart */}
                 <button
                   disabled={product.stock <= 0}
-                  onClick={() => addToCart(product, quantity)}
+                  onClick={() => addToCart(product, quantity, selectedFlavor || undefined)}
                   className={`order-3 w-full sm:order-2 sm:flex-1 h-12 inline-flex items-center justify-center gap-2 rounded font-bold uppercase tracking-wider text-sm transition-all cursor-pointer ${
                     product.stock <= 0
                       ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed shadow-none"

@@ -54,8 +54,14 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const [isPending, startTransition] = useTransition();
 
   // Dashboard state tabs
-  const [activeTab, setActiveTab] = useState<'products' | 'console' | 'users' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'console' | 'users' | 'orders' | 'categories'>('products');
   
+  // Dynamic categories list management
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+  const [savingCategoryIndex, setSavingCategoryIndex] = useState<number | null>(null);
+  const [uploadingCategoryIndex, setUploadingCategoryIndex] = useState<number | null>(null);
+
   // Database states
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
@@ -66,7 +72,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   // User Accounts and Reset Requests states
   const [usersList, setUsersList] = useState<any[]>([]);
   const [resetRequests, setResetRequests] = useState<any[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(true);
   const [loadingResets, setLoadingResets] = useState<boolean>(false);
   const [usersSearchQuery, setUsersSearchQuery] = useState('');
   
@@ -119,6 +125,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const [reviewsCount, setReviewsCount] = useState<number>(0);
   const [promoCode, setPromoCode] = useState('');
   const [discountPercentage, setDiscountPercentage] = useState<number | ''>('');
+  const [flavors, setFlavors] = useState<{ name: string; price: number; image: string }[]>([]);
+  const [uploadingFlavorIndex, setUploadingFlavorIndex] = useState<number | null>(null);
 
   // Uploading states
   const [uploadingPrimary, setUploadingPrimary] = useState(false);
@@ -193,6 +201,40 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     }
   };
 
+  const handleFlavorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingFlavorIndex(index);
+    try {
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setFlavors(prev => {
+          const next = [...prev];
+          next[index] = { ...next[index], image: data.url };
+          return next;
+        });
+      } else {
+        const errData = await res.json();
+        alert(`Flavor image upload failed: ${errData.error || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      console.error('Flavor upload error:', err);
+      alert(`Flavor image upload failed: ${err.message || err}`);
+    } finally {
+      setUploadingFlavorIndex(null);
+    }
+  };
+
   // Fetch products
   const fetchProducts = async () => {
     try {
@@ -210,6 +252,94 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
       setLoadingProducts(false);
     }
   };
+
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCategoriesList(data);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const handleCategoryUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingCategoryIndex(index);
+    try {
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCategoriesList(prev => {
+          const next = [...prev];
+          next[index] = { ...next[index], image: data.url };
+          return next;
+        });
+      } else {
+        const errData = await res.json();
+        alert(`Upload failed: ${errData.error || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      console.error('Category image upload error:', err);
+      alert(`Upload failed: ${err.message || err}`);
+    } finally {
+      setUploadingCategoryIndex(null);
+    }
+  };
+
+  const handleSaveCategory = async (index: number) => {
+    const category = categoriesList[index];
+    if (!category) return;
+
+    setSavingCategoryIndex(index);
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: category.id,
+          name: category.name,
+          badge: category.badge,
+          tagline: category.tagline,
+          image: category.image
+        })
+      });
+
+      if (res.ok) {
+        alert('Category card updated successfully!');
+        fetchCategories();
+      } else {
+        const errData = await res.json();
+        alert(`Failed to save: ${errData.error || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      console.error('Failed to save category:', err);
+      alert(`Failed to save: ${err.message || err}`);
+    } finally {
+      setSavingCategoryIndex(null);
+    }
+  };
+
 
   const fetchUsers = async () => {
     try {
@@ -276,6 +406,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   useEffect(() => {
     fetchProducts();
     fetchOrders();
+    fetchCategories();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -284,6 +416,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
       fetchResets();
     } else if (activeTab === 'orders') {
       fetchOrders();
+    } else if (activeTab === 'categories') {
+      fetchCategories();
     }
   }, [activeTab]);
 
@@ -367,6 +501,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setReviewsCount(0);
     setPromoCode('');
     setDiscountPercentage('');
+    setFlavors([]);
     setFormError(null);
     setFormSuccess(null);
   };
@@ -398,6 +533,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setReviewsCount(prod.reviewsCount !== undefined ? prod.reviewsCount : 0);
     setPromoCode(prod.promoCode || '');
     setDiscountPercentage(prod.discountPercentage !== undefined ? prod.discountPercentage : '');
+    setFlavors(Array.isArray(prod.flavors) ? prod.flavors : []);
     setFormError(null);
     setFormSuccess(null);
   };
@@ -486,7 +622,8 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
       rating: Number(rating),
       reviewsCount: Number(reviewsCount),
       promoCode: promoCode.trim().toUpperCase(),
-      discountPercentage: discountPercentage !== '' ? Number(discountPercentage) : undefined
+      discountPercentage: discountPercentage !== '' ? Number(discountPercentage) : undefined,
+      flavors: flavors
     };
 
     try {
@@ -573,16 +710,18 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
             <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-spartan-red/20 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Mock Gross Revenue</p>
-                <h3 className="text-2xl font-bold mt-2 font-display text-white">Rs. 248,500.00</h3>
+                <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Gross Revenue</p>
+                <h3 className="text-2xl font-bold mt-2 font-display text-white">
+                  Rs. {ordersList.filter(o => o.status !== 'cancelled').reduce((acc, o) => acc + (Number(o.total) || 0), 0).toLocaleString()}
+                </h3>
               </div>
               <span className="p-2 rounded bg-emerald-950/30 border border-emerald-900/50 text-emerald-400">
                 <TrendingUp className="h-4 w-4" />
               </span>
             </div>
             <div className="text-[10px] text-neutral-400 mt-3 flex items-center gap-1.5">
-              <span className="text-emerald-400 font-semibold">+18.2%</span>
-              <span>from previous session</span>
+              <span className="text-emerald-400 font-semibold">{ordersList.filter(o => o.status !== 'cancelled').length} orders</span>
+              <span>fulfilled and pending</span>
             </div>
           </div>
 
@@ -610,15 +749,15 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Registered Spartans</p>
-                <h3 className="text-2xl font-bold mt-2 font-display text-white">1,284</h3>
+                <h3 className="text-2xl font-bold mt-2 font-display text-white">{loadingUsers ? '...' : usersList.length}</h3>
               </div>
               <span className="p-2 rounded bg-neutral-900 border border-neutral-800 text-neutral-400">
                 <Users className="h-4 w-4" />
               </span>
             </div>
             <div className="text-[10px] text-neutral-400 mt-3 flex items-center gap-1.5">
-              <span className="text-spartan-gold font-semibold">+14 new</span>
-              <span>warriors today</span>
+              <span className="text-spartan-gold font-semibold">Verified account</span>
+              <span>database entries</span>
             </div>
           </div>
 
@@ -676,6 +815,18 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
             <ShoppingBag className="h-4 w-4" />
             Orders Fulfillment ({loadingOrders ? '...' : ordersList.length})
             {activeTab === 'orders' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-spartan-red" />
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('categories'); setEditingProduct(null); }}
+            className={`pb-4 px-6 text-xs font-bold uppercase tracking-wider relative transition-colors cursor-pointer flex items-center gap-2 ${
+              activeTab === 'categories' ? 'text-spartan-red' : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            <ImageIcon className="h-4 w-4" />
+            Category Cards
+            {activeTab === 'categories' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-spartan-red" />
             )}
           </button>
@@ -1206,6 +1357,130 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                     </div>
                   </div>
 
+                  {/* Product Flavors Section */}
+                  <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-5 space-y-4">
+                    <div className="flex justify-between items-center border-b border-neutral-900 pb-3">
+                      <div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-spartan-gold">Formulation Flavors</h4>
+                        <p className="text-[10px] text-neutral-500 uppercase font-semibold mt-0.5">Define distinct flavors with specific images and pricing rules</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFlavors(prev => [...prev, { name: '', price: Number(price) || 0, image: '' }])}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-black hover:bg-neutral-900 border border-neutral-850 hover:border-neutral-800 text-[10px] font-bold text-white uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5 text-spartan-gold" />
+                        <span>Add Flavor Option</span>
+                      </button>
+                    </div>
+
+                    {flavors.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-neutral-500 font-medium italic">
+                        No flavors defined. This product will default to the standard single price and primary image.
+                      </div>
+                    ) : (
+                      <div className="space-y-3.5">
+                        {flavors.map((flv, idx) => (
+                          <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end bg-black/40 border border-neutral-900 p-3 rounded-lg relative">
+                            {/* Flavor Name */}
+                            <div className="md:col-span-3 space-y-1">
+                              <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Flavor Name</label>
+                              <input
+                                type="text"
+                                value={flv.name || ''}
+                                required
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setFlavors(prev => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], name: val };
+                                    return next;
+                                  });
+                                }}
+                                placeholder="e.g. Double Rich Chocolate"
+                                className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                              />
+                            </div>
+
+                            {/* Flavor Price */}
+                            <div className="md:col-span-2 space-y-1">
+                              <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Price (LKR)</label>
+                              <input
+                                type="number"
+                                value={flv.price ?? ''}
+                                required
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setFlavors(prev => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], price: val };
+                                    return next;
+                                  });
+                                }}
+                                placeholder="e.g. 15500"
+                                className="w-full bg-black border border-neutral-850 hover:border-neutral-850 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all font-mono"
+                              />
+                            </div>
+
+                            {/* Flavor Image URL */}
+                            <div className="md:col-span-4 space-y-1">
+                              <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Image URL</label>
+                              <input
+                                type="text"
+                                value={flv.image || ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setFlavors(prev => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], image: val };
+                                    return next;
+                                  });
+                                }}
+                                placeholder="Paste image URL..."
+                                className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                              />
+                            </div>
+
+                            {/* Upload image selector */}
+                            <div className="md:col-span-2 space-y-1">
+                              <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Or Upload File</label>
+                              <div className="relative flex items-center justify-center bg-black border border-dashed border-neutral-800 hover:border-neutral-700 rounded p-2 transition-colors cursor-pointer text-center min-h-[34px]">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleFlavorImageUpload(e, idx)}
+                                  disabled={uploadingFlavorIndex === idx}
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                                />
+                                {uploadingFlavorIndex === idx ? (
+                                  <span className="text-[8px] uppercase tracking-wider font-black text-spartan-red flex items-center gap-1">
+                                    <Loader2 className="h-3 w-3 animate-spin" /> Uploading
+                                  </span>
+                                ) : (
+                                  <span className="text-[8px] uppercase tracking-wider font-black text-neutral-500 hover:text-white transition-colors">
+                                    Browse...
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Delete Button */}
+                            <div className="md:col-span-1 flex justify-end pb-1">
+                              <button
+                                type="button"
+                                onClick={() => setFlavors(prev => prev.filter((_, fIdx) => fIdx !== idx))}
+                                className="p-2 rounded bg-neutral-900 hover:bg-neutral-850 border border-transparent hover:border-neutral-750 text-spartan-red transition-all cursor-pointer"
+                                title="Remove Flavor"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Submission Row */}
                   <div className="flex justify-end gap-3 pt-4 border-t border-neutral-900">
                     <button
@@ -1505,6 +1780,178 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                 </li>
               </ul>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'categories' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-neutral-950 p-4 border border-neutral-900 rounded-xl">
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider font-display text-white">Homepage Category Cards</h3>
+                <p className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Change images and information for homepage formulation cards</p>
+              </div>
+              <button
+                type="button"
+                onClick={fetchCategories}
+                className="px-4 py-2 text-[10px] font-bold text-white border border-neutral-800 hover:border-neutral-700 rounded bg-black transition-all cursor-pointer flex items-center gap-1.5 uppercase tracking-wider"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Reload
+              </button>
+            </div>
+
+            {loadingCategories ? (
+              <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-spartan-red" />
+                <span className="text-xs uppercase tracking-widest font-black">Retrieving Categories...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categoriesList.map((cat, idx) => (
+                  <div key={cat.id} className="bg-neutral-950 border border-neutral-900 hover:border-spartan-red/35 rounded-xl p-5 flex flex-col justify-between transition-all duration-300 relative group overflow-hidden">
+                    {/* Glowing highlight indicator */}
+                    <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-spartan-red/25 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+                    
+                    <div className="space-y-4">
+                      {/* Live preview */}
+                      <div className="relative aspect-square w-full rounded-lg overflow-hidden border border-neutral-800 bg-black flex items-center justify-center">
+                        {cat.image ? (
+                          <img
+                            src={cat.image}
+                            alt={cat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-[10px] uppercase font-bold text-neutral-600">No Image Selected</div>
+                        )}
+                        <span className="absolute top-2 left-2 bg-black/80 text-[8px] uppercase tracking-wider font-black text-spartan-gold px-2 py-0.5 rounded border border-spartan-gold/30">
+                          {cat.id}
+                        </span>
+                      </div>
+
+                      {/* Display name */}
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-400">Card Name</label>
+                        <input
+                          type="text"
+                          value={cat.name || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCategoriesList(prev => {
+                              const next = [...prev];
+                              next[idx] = { ...next[idx], name: val };
+                              return next;
+                            });
+                          }}
+                          className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Badge text */}
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-400">Badge Text (Top of Card)</label>
+                        <input
+                          type="text"
+                          value={cat.badge || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCategoriesList(prev => {
+                              const next = [...prev];
+                              next[idx] = { ...next[idx], badge: val };
+                              return next;
+                            });
+                          }}
+                          className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Tagline text */}
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-400">Tagline Description</label>
+                        <input
+                          type="text"
+                          value={cat.tagline || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCategoriesList(prev => {
+                              const next = [...prev];
+                              next[idx] = { ...next[idx], tagline: val };
+                              return next;
+                            });
+                          }}
+                          className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Image URL input */}
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-400">Card Image URL</label>
+                        <input
+                          type="text"
+                          value={cat.image || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCategoriesList(prev => {
+                              const next = [...prev];
+                              next[idx] = { ...next[idx], image: val };
+                              return next;
+                            });
+                          }}
+                          placeholder="Paste custom image URL here..."
+                          className="w-full bg-black border border-neutral-850 hover:border-neutral-800 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* Local File Upload Selector */}
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-450">Or Upload New Image</label>
+                        <div className="relative flex items-center justify-center bg-black border border-dashed border-neutral-800 hover:border-neutral-700 rounded-lg p-3 transition-colors cursor-pointer group/upload">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleCategoryUpload(e, idx)}
+                            disabled={uploadingCategoryIndex === idx}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                          />
+                          <div className="flex flex-col items-center gap-1.5 text-center pointer-events-none">
+                            {uploadingCategoryIndex === idx ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin text-spartan-red" />
+                                <span className="text-[9px] uppercase tracking-wider font-bold text-neutral-500">Uploading File...</span>
+                              </>
+                            ) : (
+                              <>
+                                <ImageIcon className="h-4 w-4 text-neutral-500 group-hover/upload:text-white transition-colors" />
+                                <span className="text-[9px] uppercase tracking-wider font-bold text-neutral-500 group-hover/upload:text-neutral-300 transition-colors">Choose local file...</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Actions footer */}
+                    <div className="pt-4 mt-4 border-t border-neutral-900 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveCategory(idx)}
+                        disabled={savingCategoryIndex === idx || uploadingCategoryIndex === idx}
+                        className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded bg-spartan-red hover:bg-spartan-red-dark text-[10px] font-bold text-white transition-all cursor-pointer disabled:opacity-50 shadow-glow-red uppercase tracking-wider"
+                      >
+                        {savingCategoryIndex === idx ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Save className="h-3.5 w-3.5" />
+                        )}
+                        <span>Save Changes</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

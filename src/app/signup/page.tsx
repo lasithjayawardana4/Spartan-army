@@ -1,44 +1,47 @@
 "use client";
-
-import React, { useState } from "react";
+ 
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { User, Mail, Phone, MapPin, Lock, Dumbbell, AlertTriangle } from "lucide-react";
-
-export default function SignupPage() {
+ 
+function SignupPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register, user } = useCart();
   
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+ 
+  const redirectUrl = searchParams.get("redirect") || "/";
 
   // If already logged in, redirect
   React.useEffect(() => {
     if (user) {
-      router.push("/");
+      router.push(redirectUrl);
     }
-  }, [user, router]);
-
+  }, [user, router, redirectUrl]);
+ 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+ 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-
+ 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setLoading(false);
       return;
     }
-
+ 
     try {
       const res = await register(formData);
       if (res.success) {
-        router.push("/");
+        router.push(redirectUrl);
         router.refresh();
       } else {
         setError(res.error || "Failed to create account");
@@ -218,7 +221,7 @@ export default function SignupPage() {
               Already have an account?{" "}
             </span>
             <Link
-              href="/login"
+              href={`/login?redirect=${encodeURIComponent(redirectUrl)}`}
               className="text-xs text-spartan-gold hover:text-spartan-red font-bold uppercase tracking-wider transition-colors ml-1"
             >
               Sign In
@@ -227,5 +230,13 @@ export default function SignupPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>}>
+      <SignupPageContent />
+    </Suspense>
   );
 }

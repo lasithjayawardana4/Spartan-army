@@ -85,6 +85,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       stock: Number(data.stock || 0),
       promoCode: data.promoCode ? data.promoCode.trim().toUpperCase() : undefined,
       discountPercentage: data.discountPercentage ? Number(data.discountPercentage) : undefined,
+      flavors: Array.isArray(data.flavors) ? data.flavors.map((f: any) => ({
+        name: String(f.name).trim(),
+        price: Number(f.price || 0),
+        image: String(f.image || '')
+      })) : [],
       updatedAt: new Date()
     };
 

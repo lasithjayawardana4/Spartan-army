@@ -65,6 +65,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"best-sellers" | "new-arrivals">("best-sellers");
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
   const [newsletterForm, setNewsletterForm] = useState({ name: "", email: "" });
+  const [categories, setCategories] = useState(CAROUSEL_CATEGORIES);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
@@ -80,6 +81,17 @@ export default function HomePage() {
       .catch((err) => {
         console.error("Failed to fetch products:", err);
         setLoadingProducts(false);
+      });
+
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch categories:", err);
       });
   }, []);
 
@@ -117,11 +129,11 @@ export default function HomePage() {
   }, []);
 
   const handlePrevCategory = () => {
-    setCarouselIndex((prev) => (prev === 0 ? CAROUSEL_CATEGORIES.length - 1 : prev - 1));
+    setCarouselIndex((prev) => (prev === 0 ? categories.length - 1 : prev - 1));
   };
 
   const handleNextCategory = () => {
-    setCarouselIndex((prev) => (prev === CAROUSEL_CATEGORIES.length - 1 ? 0 : prev + 1));
+    setCarouselIndex((prev) => (prev === categories.length - 1 ? 0 : prev + 1));
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -312,9 +324,9 @@ export default function HomePage() {
 
 
           {/* 2. Interactive Double-Column Section: 3D Category Coverflow (Left) & Delivery Info (Right) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2 pb-0 md:pb-6 w-full max-w-[96%] mx-auto">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-center pt-2 pb-0 md:pb-6 w-full max-w-[96%] mx-auto">
             {/* Left Column: 3D Category Coverflow Slider */}
-            <div className="lg:col-span-7 flex flex-col items-center justify-start sm:justify-center relative min-h-[400px] md:min-h-[530px] w-full overflow-hidden pt-1 pb-4 sm:py-4">
+            <div className="xl:col-span-7 flex flex-col items-center justify-start sm:justify-center relative min-h-[400px] md:min-h-[530px] w-full overflow-hidden pt-1 pb-4 sm:py-4">
               <h3 className="text-xs font-black uppercase text-spartan-gold tracking-widest text-center mb-2 md:mb-6">
                 SELECT YOUR FORMULATION
               </h3>
@@ -338,10 +350,10 @@ export default function HomePage() {
 
                 {/* Coverflow Cards */}
                 <div className="relative w-full max-w-md md:max-w-lg h-full flex items-center justify-center overflow-visible" style={{ perspective: "1000px" }}>
-                  {CAROUSEL_CATEGORIES.map((cat, idx) => {
+                  {categories.map((cat, idx) => {
                     // Calculate relative offset wrapping around
                     let diff = idx - carouselIndex;
-                    const N = CAROUSEL_CATEGORIES.length;
+                    const N = categories.length;
                     if (diff < -N / 2) diff += N;
                     if (diff > N / 2) diff -= N;
 
@@ -518,7 +530,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Delivery Banner + Transparent Spartan Rider (Desktop Only) */}
-            <div className="hidden lg:flex lg:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-visible">
+            <div className="hidden xl:flex xl:col-span-5 flex-col justify-center relative w-full px-4 md:px-8 py-6 min-h-[360px] md:min-h-[420px] overflow-visible">
               {/* Subtle red background glow directly on the page background */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               
@@ -806,7 +818,7 @@ export default function HomePage() {
             </div>
 
             {/* Mobile-only Delivery Banner (Warrior Logistics) */}
-            <div className="lg:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[380px] overflow-hidden mt-4">
+            <div className="xl:hidden flex flex-col justify-center relative w-full px-4 py-6 min-h-[380px] overflow-hidden mt-4">
               {/* Subtle red background glow */}
               <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-spartan-red/10 rounded-full blur-[80px] pointer-events-none" />
               

@@ -104,68 +104,79 @@ export const CartDrawer = () => {
                   </button>
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex gap-4 p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
-                  >
-                    {/* Image */}
-                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded bg-black border border-white/10">
-                      <img
-                        src={item.product.image}
-                        alt={item.product.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex flex-1 flex-col justify-between">
-                      <div>
-                        <div className="flex items-start justify-between gap-1">
-                          <h4 className="text-sm font-bold text-white uppercase tracking-wide line-clamp-1">
-                            {item.product.name}
-                          </h4>
-                          <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-white/40 hover:text-spartan-red transition-colors p-1"
-                            aria-label="Remove item"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <p className="text-sm text-spartan-gold font-bold mt-1">
-                          Rs. {item.product.price.toLocaleString()}
-                        </p>
+                cartItems.map((item) => {
+                  const itemPrice = item.selectedFlavor ? item.selectedFlavor.price : item.product.price;
+                  const itemImage = item.selectedFlavor?.image || item.product.image;
+                  return (
+                    <div
+                      key={`${item.product.id}-${item.selectedFlavor?.name || ""}`}
+                      className="flex gap-4 p-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
+                    >
+                      {/* Image */}
+                      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded bg-black border border-white/10 flex items-center justify-center p-1.5">
+                        <img
+                          src={itemImage}
+                          alt={item.product.name}
+                          className="max-h-full max-w-full object-contain"
+                        />
                       </div>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center rounded border border-white/10 bg-black">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="px-2 py-1 text-white/60 hover:text-white transition-colors"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="px-2 text-sm font-semibold text-white min-w-[20px] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="px-2 py-1 text-white/60 hover:text-white transition-colors"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
+                      {/* Details */}
+                      <div className="flex flex-1 flex-col justify-between">
+                        <div>
+                          <div className="flex items-start justify-between gap-1">
+                            <div>
+                              <h4 className="text-sm font-bold text-white uppercase tracking-wide line-clamp-1 text-left">
+                                {item.product.name}
+                              </h4>
+                              {item.selectedFlavor && (
+                                <span className="text-[10px] text-spartan-gold block font-black uppercase tracking-widest mt-0.5 text-left">
+                                  Flavor: {item.selectedFlavor.name}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => removeFromCart(item.product.id, item.selectedFlavor?.name)}
+                              className="text-white/40 hover:text-spartan-red transition-colors p-1 cursor-pointer shrink-0"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <p className="text-sm text-spartan-gold font-bold mt-1 text-left">
+                            Rs. {itemPrice.toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-sm font-bold text-white">
-                          Rs. {(item.product.price * item.quantity).toLocaleString()}
-                        </p>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center rounded border border-white/10 bg-black">
+                            <button
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedFlavor?.name)}
+                              className="px-2 py-1 text-white/60 hover:text-white transition-colors cursor-pointer"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="px-2 text-sm font-semibold text-white min-w-[20px] text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedFlavor?.name)}
+                              className="px-2 py-1 text-white/60 hover:text-white transition-colors cursor-pointer"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <p className="text-sm font-bold text-white">
+                            Rs. {(itemPrice * item.quantity).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 

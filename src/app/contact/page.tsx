@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { MapPin, Phone, MessageSquare, Clock, Send, CheckCircle2 } from "lucide-react";
+import { MapPin, Phone, MessageSquare, Clock, Send, CheckCircle2, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ContactPage() {
@@ -29,7 +29,13 @@ export default function ContactPage() {
       desc: "Call or text us for direct stock inquiry."
     },
     {
-      icon: <Clock className="h-6 w-6 text-spartan-red" />,
+      icon: <Mail className="h-6 w-6 text-spartan-red" />,
+      title: "Email Address",
+      value: "lasithjayawardana4@gmail.com",
+      desc: "Reach our support line directly via email."
+    },
+    {
+      icon: <Clock className="h-6 w-6 text-spartan-gold" />,
       title: "Business Hours",
       value: "Mon - Sat: 8:00 AM - 8:00 PM",
       desc: "Sunday: 9:00 AM - 5:00 PM"

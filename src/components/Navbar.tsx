@@ -234,51 +234,58 @@ export const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-black/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full bg-black/85 backdrop-blur-xl border-b border-neutral-900 transition-all duration-300 relative">
+      {/* Animated thin colored border line at the absolute bottom of the navbar */}
+      <div className="absolute bottom-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-spartan-gold/30 to-transparent pointer-events-none" />
+
       <div className="mx-auto w-full sm:max-w-[94%] px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between gap-4">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative flex h-20 w-20 md:h-[90px] md:w-[90px] items-center justify-center transition-all duration-300 group-hover:scale-110 -my-4 z-20">
-              {/* Subtle backglow behind the helmet to make it stand out from black background */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(179,0,0,0.4)_0%,transparent_70%)] rounded-full filter blur-xs pointer-events-none" />
+          <Link href="/" className="flex items-center gap-3 group relative py-2">
+            <div className="relative flex h-14 w-14 items-center justify-center transition-all duration-300 group-hover:scale-108 z-20">
+              {/* Backglow behind the helmet to make it stand out */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.35)_0%,transparent_70%)] rounded-full filter blur-xs pointer-events-none group-hover:scale-125 transition-all duration-300" />
               <img
                 src="/images/spartan_logo.png"
                 alt="Spartan Supplements Logo"
-                className="h-full w-full object-contain filter drop-shadow-[0_0_10px_rgba(179,0,0,0.95)] drop-shadow-[0_0_3px_rgba(255,255,255,0.45)] transition-all duration-300"
+                className="h-full w-full object-contain filter drop-shadow-[0_0_8px_rgba(212,175,55,0.7)] drop-shadow-[0_0_2px_rgba(255,255,255,0.3)] transition-all duration-300"
               />
             </div>
-            <span className="hidden sm:inline-block text-xl md:text-2xl font-black tracking-wider uppercase text-white group-hover:text-spartan-red transition-colors duration-300">
-              SPARTAN <span className="text-spartan-gold hidden sm:inline">SUPPLEMENTS</span>
+            <span className="hidden sm:inline-block text-lg md:text-xl font-black tracking-widest uppercase text-white font-display">
+              SPARTAN <span className="text-transparent bg-clip-text bg-gradient-to-r from-spartan-gold to-yellow-500 group-hover:text-spartan-red transition-all duration-300">SUPPLEMENTS</span>
             </span>
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-base font-semibold tracking-wide uppercase transition-colors duration-200 hover:text-spartan-red ${
-                    isActive ? "text-spartan-red font-bold" : "text-white/80"
+                  className={`text-xs font-bold tracking-widest uppercase relative py-2 transition-colors duration-300 group ${
+                    isActive ? "text-spartan-gold" : "text-white/75 hover:text-white"
                   }`}
                 >
                   {link.name}
+                  {/* Sliding underline on hover/active */}
+                  <span className={`absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-spartan-red to-spartan-gold transition-transform duration-300 origin-left ${
+                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                  }`} />
                 </Link>
               );
             })}
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             
             {/* Permanent Desktop Search Bar - Enlarged and styled with red glow & gold hover */}
-            <div ref={desktopContainerRef} className="hidden md:flex relative items-center md:w-64 lg:w-[400px] xl:w-[480px] bg-zinc-950/90 border border-white/10 hover:border-spartan-gold/45 focus-within:border-spartan-red focus-within:shadow-[0_0_15px_rgba(179,0,0,0.5)] rounded-full px-4.5 py-2.5 transition-all duration-300">
+            <div ref={desktopContainerRef} className="hidden lg:flex relative items-center lg:w-[350px] xl:w-[420px] bg-zinc-950/90 border border-neutral-900 hover:border-spartan-gold/30 focus-within:border-spartan-red focus-within:shadow-[0_0_15px_rgba(179,0,0,0.3)] rounded-full px-4 py-2 transition-all duration-300">
               <button onClick={triggerSearch} className="flex-shrink-0 cursor-pointer">
-                <Search className="h-5 w-5 text-spartan-gold" />
+                <Search className="h-4.5 w-4.5 text-spartan-gold" />
               </button>
               <input
                 type="text"
@@ -287,14 +294,13 @@ export const Navbar = () => {
                 onChange={handleSearchChange}
                 onKeyDown={handleKeyDown}
                 onFocus={() => setSuggestionsOpen(true)}
-                className="w-full bg-transparent border-0 px-3.5 py-0 text-sm md:text-base text-white focus:outline-none focus:ring-0 placeholder-white/30"
+                className="w-full bg-transparent border-0 px-3.5 py-0 text-sm text-white focus:outline-none focus:ring-0 placeholder-white/30"
               />
               {renderSuggestionsDropdown()}
             </div>
 
-
-             {/* Expandable Search Bar for Tablet (sm to md) */}
-            <div ref={tabletContainerRef} className={`relative hidden sm:flex md:hidden items-center ${searchOpen ? "w-48" : "w-10"} transition-all duration-300 ${suggestionsOpen && searchOpen ? "" : "overflow-hidden"}`}>
+             {/* Expandable Search Bar for Tablet (sm to lg) */}
+            <div ref={tabletContainerRef} className={`relative hidden sm:flex lg:hidden items-center ${searchOpen ? "w-48" : "w-10"} transition-all duration-300 ${suggestionsOpen && searchOpen ? "" : "overflow-hidden"}`}>
               {searchOpen && (
                 <input
                   type="text"
@@ -328,21 +334,21 @@ export const Navbar = () => {
               onClick={() => {
                 setSearchOpen(!searchOpen);
               }}
-              className="p-2 text-white/80 hover:text-spartan-red transition-colors sm:hidden"
+              className="p-2.5 text-white/80 hover:text-spartan-red hover:scale-105 transition-all sm:hidden rounded-full bg-white/5 border border-white/10"
               aria-label="Mobile Search"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-4.5 w-4.5" />
             </button>
 
             {/* Wishlist Link */}
             <Link
               href="/shop?filter=wishlist"
-              className="relative p-2 text-white/80 hover:text-spartan-red transition-colors hidden md:inline-flex"
+              className="relative p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all duration-250 hidden lg:inline-flex rounded-full bg-white/5 border border-white/10"
               aria-label="Wishlist"
             >
-              <Heart className="h-5 w-5" />
+              <Heart className="h-4.5 w-4.5" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-spartan-gold text-[10px] font-bold text-black">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-spartan-gold text-[9px] font-black text-black">
                   {wishlist.length}
                 </span>
               )}
@@ -351,12 +357,12 @@ export const Navbar = () => {
             {/* Cart Trigger */}
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="relative p-2 text-white/80 hover:text-spartan-red transition-colors cursor-pointer"
+              className="relative p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all duration-200 cursor-pointer rounded-full bg-white/5 border border-white/10 hover:border-spartan-gold/30 shadow-sm"
               aria-label="Shopping Cart"
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-4.5 w-4.5" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-spartan-red text-[10px] font-bold text-white shadow-[0_0_8px_rgba(179,0,0,0.6)]">
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-spartan-red text-[8px] font-black text-white shadow-glow-red animate-pulse">
                   {cartCount}
                 </span>
               )}
@@ -368,21 +374,21 @@ export const Navbar = () => {
                 <>
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="flex items-center gap-1.5 p-2 text-white/85 hover:text-spartan-gold transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 p-2 px-3 text-white/85 hover:text-spartan-gold hover:scale-102 transition-all duration-200 cursor-pointer rounded-full bg-white/5 border border-white/10"
                     title="View Profile Details"
                   >
-                    <User className="h-5 w-5" />
-                    <span className="hidden lg:inline text-xs font-bold uppercase tracking-wider max-w-[90px] truncate text-white">
+                    <User className="h-4 w-4 text-spartan-gold" />
+                    <span className="hidden lg:inline text-[10px] font-black uppercase tracking-wider max-w-[90px] truncate text-white">
                       {user.name.split(" ")[0]}
                     </span>
                   </button>
 
                   {/* Profile Dropdown Popover */}
                   {profileOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-72 bg-neutral-950/95 border border-white/10 backdrop-blur-md shadow-2xl rounded-lg overflow-hidden z-50 p-4">
+                    <div className="absolute right-0 top-full mt-3 w-72 bg-neutral-950/95 border border-neutral-900 backdrop-blur-xl shadow-[0_15px_40px_rgba(212,175,55,0.15)] rounded-xl overflow-hidden z-50 p-4">
                       {/* User Header */}
                       <div className="space-y-0.5">
-                        <div className="text-xs text-neutral-500 uppercase tracking-widest font-black">SPARTAN AGENT</div>
+                        <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-black">SPARTAN AGENT</div>
                         <div className="font-extrabold text-sm text-spartan-gold uppercase tracking-wider truncate">{user.name}</div>
                         <div className="text-xs text-white/60 flex items-center gap-1.5 truncate">
                           <Mail className="h-3 w-3 shrink-0 text-white/40" />
@@ -421,7 +427,7 @@ export const Navbar = () => {
                           setProfileOpen(false);
                           router.push("/orders");
                         }}
-                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-neutral-900 border border-white/10 hover:border-spartan-gold text-xs font-bold uppercase tracking-wider text-white rounded transition-colors duration-200 cursor-pointer mb-2"
+                        className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-neutral-900 border border-neutral-805 hover:border-spartan-gold text-xs font-bold uppercase tracking-wider text-white rounded transition-colors duration-200 cursor-pointer mb-2"
                       >
                         <ShoppingBag className="h-3.5 w-3.5 text-spartan-gold" />
                         <span>My Orders</span>
@@ -443,11 +449,13 @@ export const Navbar = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="p-2 text-white/80 hover:text-spartan-red transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase tracking-wider text-white border border-white/10 hover:border-spartan-gold hover:text-spartan-gold rounded-full bg-white/5 transition-all duration-300"
                   title="Log In / Join"
-                  aria-label="Login"
+                  aria-label="Login / Signup"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-3.5 w-3.5 text-spartan-gold" />
+                  <span className="hidden sm:inline">Join Army</span>
+                  <span className="sm:hidden">Join</span>
                 </Link>
               )}
             </div>
@@ -455,10 +463,10 @@ export const Navbar = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-white/80 hover:text-spartan-red transition-colors md:hidden"
+              className="p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all lg:hidden rounded-full bg-white/5 border border-white/10"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
             </button>
           </div>
         </div>
@@ -482,7 +490,7 @@ export const Navbar = () => {
 
       {/* Mobile Drawer Menu (floating card style overlay) */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-4 right-4 mt-2 z-50 bg-neutral-950/98 border border-white/10 shadow-2xl rounded-xl p-4 space-y-3 backdrop-blur-lg">
+        <div className="lg:hidden absolute top-full left-4 right-4 mt-3 z-50 bg-neutral-950/95 border border-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] rounded-xl p-5 space-y-4 backdrop-blur-xl">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -490,8 +498,8 @@ export const Navbar = () => {
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase ${
-                  isActive ? "bg-white/5 text-spartan-red" : "text-white/80 hover:bg-white/5 hover:text-spartan-red"
+                className={`block px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase transition-all ${
+                  isActive ? "bg-white/5 text-spartan-gold" : "text-white/85 hover:bg-white/5 hover:text-spartan-gold"
                 }`}
               >
                 {link.name}
@@ -503,7 +511,7 @@ export const Navbar = () => {
           <Link
             href="/shop?filter=wishlist"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
           >
             <div className="relative flex items-center">
               <Heart className="h-4 w-4 text-spartan-gold" />
@@ -518,7 +526,7 @@ export const Navbar = () => {
           
           {/* Mobile User session options */}
           {user ? (
-            <div className="pt-4 border-t border-white/5 space-y-2">
+            <div className="pt-4 border-t border-neutral-900 space-y-2">
               <div className="px-3 pb-1">
                 <span className="text-xs font-bold text-spartan-gold uppercase tracking-wider truncate block">
                   {user.name}
@@ -529,7 +537,7 @@ export const Navbar = () => {
                   setMobileMenuOpen(false);
                   router.push("/orders");
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
               >
                 <ShoppingBag className="h-4 w-4 text-spartan-gold" />
                 <span>My Orders</span>
@@ -539,7 +547,7 @@ export const Navbar = () => {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase text-white/80 hover:bg-white/5 hover:text-spartan-red transition-colors cursor-pointer text-left"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase text-white/80 hover:bg-white/5 hover:text-spartan-red transition-colors cursor-pointer text-left"
               >
                 <LogOut className="h-4 w-4 text-spartan-red" />
                 <span>Log Out</span>
@@ -549,18 +557,18 @@ export const Navbar = () => {
             <Link
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-base font-semibold tracking-wide uppercase text-white/80 hover:bg-white/5 hover:text-spartan-red"
+              className="block px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold"
             >
-              Sign In / Join Army
+              Join Army
             </Link>
           )}
 
-          <div className="pt-4 border-t border-white/5 px-3">
+          <div className="pt-4 border-t border-neutral-900 px-3">
             <a
               href="tel:+94715520324"
-              className="flex items-center gap-2 text-base text-white/60 hover:text-spartan-gold transition-colors"
+              className="flex items-center gap-2 text-xs font-bold text-white/60 hover:text-spartan-gold transition-colors"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 text-spartan-gold" />
               <span>+94 71 552 0324</span>
             </a>
           </div>

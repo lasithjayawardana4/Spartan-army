@@ -1,37 +1,40 @@
 "use client";
-
-import React, { useState } from "react";
+ 
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { Mail, Lock, AlertTriangle, ShieldCheck } from "lucide-react";
-
-export default function LoginPage() {
+ 
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, user } = useCart();
   
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const redirectUrl = searchParams.get("redirect") || "/";
+ 
   React.useEffect(() => {
     if (user) {
-      router.push("/");
+      router.push(redirectUrl);
     }
-  }, [user, router]);
-
+  }, [user, router, redirectUrl]);
+ 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+ 
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-
+ 
     try {
       const res = await login(email, password);
       if (res.success) {
-        router.push("/");
+        router.push(redirectUrl);
         router.refresh();
       } else {
         setError(res.error || "Invalid email or password");
@@ -55,17 +58,14 @@ export default function LoginPage() {
 
         {/* Brand Logo Block */}
         <div className="flex flex-col items-center mb-7">
-          {/* Logo with red glow ring */}
-          <div className="relative mb-4">
-            {/* Outer glow ring */}
-            <div className="absolute inset-0 rounded-full bg-spartan-red/20 blur-xl scale-150 animate-pulse" />
-            <div className="relative h-24 w-24 flex items-center justify-center rounded-full bg-black border-2 border-spartan-red/60 shadow-[0_0_30px_rgba(179,0,0,0.7),0_0_60px_rgba(179,0,0,0.3),inset_0_0_20px_rgba(179,0,0,0.1)]">
-              <img
-                src="/images/spartan_logo.png"
-                alt="Spartan Supplements"
-                className="h-20 w-20 object-contain filter drop-shadow-[0_0_14px_rgba(179,0,0,1)] drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]"
-              />
-            </div>
+          {/* Logo with clean backglow */}
+          <div className="relative h-24 w-24 flex items-center justify-center mb-2">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(179,0,0,0.55)_0%,transparent_70%)] rounded-full filter blur-md pointer-events-none" />
+            <img
+              src="/images/spartan_logo.png"
+              alt="Spartan Supplements"
+              className="h-24 w-24 object-contain filter drop-shadow-[0_0_12px_rgba(179,0,0,0.95)] drop-shadow-[0_0_3px_rgba(255,255,255,0.45)]"
+            />
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider text-white text-center leading-tight">
@@ -167,14 +167,14 @@ export default function LoginPage() {
               New to the Spartan Army?{" "}
             </span>
             <Link
-              href="/signup"
+              href={`/signup?redirect=${encodeURIComponent(redirectUrl)}`}
               className="text-xs text-spartan-gold hover:text-spartan-red font-black uppercase tracking-wider transition-colors"
             >
               Join Army / Sign Up
             </Link>
           </div>
         </div>
-
+ 
         {/* Back to home link */}
         <p className="text-center mt-4">
           <Link href="/" className="text-[11px] text-white/30 hover:text-white/60 transition-colors uppercase tracking-widest">
@@ -183,5 +183,13 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white">Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

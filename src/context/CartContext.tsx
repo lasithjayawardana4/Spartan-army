@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { Product } from "@/data/products";
+import { Product, Flavor } from "@/data/products";
 import {
   getCurrentUser,
   loginUser,
@@ -13,13 +13,14 @@ import {
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedFlavor?: Flavor;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number, flavor?: Flavor) => void;
+  removeFromCart: (productId: string, flavorName?: string) => void;
+  updateQuantity: (productId: string, quantity: number, flavorName?: string) => void;
   clearCart: () => void;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
@@ -46,7 +47,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const mergeCarts = (local: CartItem[], db: CartItem[]): CartItem[] => {
   const merged = [...db];
   for (const localItem of local) {
-    const existing = merged.find((item) => item.product.id === localItem.product.id);
+    const existing = merged.find((item) => 
+      item.product.id === localItem.product.id && 
+      item.selectedFlavor?.name === localItem.selectedFlavor?.name
+    );
     if (existing) {
       existing.quantity += localItem.quantity;
     } else {
@@ -192,33 +196,43 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res;
   };
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: Product, quantity = 1, flavor?: Flavor) => {
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.product.id === product.id);
+      const existingItem = prevItems.find((item) => 
+        item.product.id === product.id && 
+        item.selectedFlavor?.name === flavor?.name
+      );
       if (existingItem) {
         return prevItems.map((item) =>
-          item.product.id === product.id
+          item.product.id === product.id && 
+          item.selectedFlavor?.name === flavor?.name
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      return [...prevItems, { product, quantity }];
+      return [...prevItems, { product, quantity, selectedFlavor: flavor }];
     });
     setCartDrawerOpen(true); // Automatically open the drawer on add
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
+  const removeFromCart = (productId: string, flavorName?: string) => {
+    setCartItems((prevItems) => 
+      prevItems.filter((item) => 
+        !(item.product.id === productId && item.selectedFlavor?.name === flavorName)
+      )
+    );
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, flavorName?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, flavorName);
       return;
     }
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.product.id === productId && item.selectedFlavor?.name === flavorName
+          ? { ...item, quantity }
+          : item
       )
     );
   };
@@ -238,7 +252,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const cartSubtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const cartSubtotal = cartItems.reduce((acc, item) => {
+    const itemPrice = item.selectedFlavor ? item.selectedFlavor.price : item.product.price;
+    return acc + itemPrice * item.quantity;
+  }, 0);
   
   // Shipping rule: Free delivery above 15,000 LKR, else 500 LKR flat rate.
   const shipping = cartSubtotal > 15000 || cartSubtotal === 0 ? 0 : 500;

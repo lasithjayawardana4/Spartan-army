@@ -13,9 +13,9 @@ export async function POST(req: Request) {
 
     // 2. Parse form data
     const formData = await req.formData();
-    const file = formData.get('file') as File;
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    const file = formData.get('file');
+    if (!file || typeof file === 'string') {
+      return NextResponse.json({ error: 'No file uploaded or invalid file format' }, { status: 400 });
     }
 
     // 3. Read buffer
@@ -26,10 +26,11 @@ export async function POST(req: Request) {
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     await fs.mkdir(uploadDir, { recursive: true });
 
-    // Generate secure filename
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const ext = path.extname(sanitizedName) || '.webp';
-    const base = path.basename(sanitizedName, ext);
+    // Generate secure filename safely
+    const originalName = (file as any).name || 'upload.png';
+    const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const ext = path.extname(sanitizedName) || '.png';
+    const base = path.basename(sanitizedName, ext) || 'image';
     
     // Preserve original extension
     const safeExt = ext.toLowerCase();
@@ -46,6 +47,6 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error('File upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }

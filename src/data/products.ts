@@ -1,3 +1,9 @@
+export interface Flavor {
+  name: string;
+  price: number;
+  image: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -20,6 +26,7 @@ export interface Product {
   stock: number;
   promoCode?: string;
   discountPercentage?: number;
+  flavors?: Flavor[];
 }
 
 export interface Category {
