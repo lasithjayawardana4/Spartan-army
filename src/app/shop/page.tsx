@@ -150,7 +150,7 @@ function ShopContent() {
       <div className="w-full flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
         
         {/* Sidebar Filters - Desktop */}
-        <aside className="hidden lg:block w-64 flex-shrink-0 space-y-8 glass-panel p-6 rounded-lg">
+        <aside className="hidden lg:block w-64 flex-shrink-0 space-y-8 glass-panel p-6 rounded-lg sticky top-24 z-20">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-white uppercase tracking-wider text-base flex items-center gap-2">

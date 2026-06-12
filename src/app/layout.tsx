@@ -46,7 +46,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-black text-white font-sans selection:bg-spartan-red selection:text-white">
         <CartProvider>
           <Navbar />
-          <main className="flex-grow flex flex-col w-full max-w-full overflow-x-hidden relative">{children}</main>
+          <main className="flex-grow flex flex-col w-full max-w-full overflow-x-clip relative">{children}</main>
           <Footer />
           <CartDrawer />
         </CartProvider>
