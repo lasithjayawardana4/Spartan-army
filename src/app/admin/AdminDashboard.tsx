@@ -125,7 +125,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
   const [reviewsCount, setReviewsCount] = useState<number>(0);
   const [promoCode, setPromoCode] = useState('');
   const [discountPercentage, setDiscountPercentage] = useState<number | ''>('');
-  const [flavors, setFlavors] = useState<{ name: string; price: number; image: string }[]>([]);
+  const [flavors, setFlavors] = useState<{ name: string; price: number; image: string; stock: number }[]>([]);
   const [uploadingFlavorIndex, setUploadingFlavorIndex] = useState<number | null>(null);
 
   // Uploading states
@@ -533,7 +533,12 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
     setReviewsCount(prod.reviewsCount ?? 0);
     setPromoCode(prod.promoCode ?? '');
     setDiscountPercentage(prod.discountPercentage ?? '');
-    setFlavors(Array.isArray(prod.flavors) ? prod.flavors : []);
+    setFlavors(Array.isArray(prod.flavors) ? prod.flavors.map((f: any) => ({
+      name: f.name || '',
+      price: f.price || 0,
+      image: f.image || '',
+      stock: f.stock !== undefined ? f.stock : 10
+    })) : []);
     setFormError(null);
     setFormSuccess(null);
   };
@@ -1366,7 +1371,7 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setFlavors(prev => [...prev, { name: '', price: Number(price) || 0, image: '' }])}
+                        onClick={() => setFlavors(prev => [...prev, { name: '', price: Number(price) || 0, image: '', stock: 10 }])}
                         className="flex items-center gap-1 px-3 py-1.5 rounded bg-black hover:bg-neutral-900 border border-neutral-850 hover:border-neutral-800 text-[10px] font-bold text-white uppercase tracking-wider transition-colors cursor-pointer"
                       >
                         <Plus className="h-3.5 w-3.5 text-spartan-gold" />
@@ -1422,8 +1427,28 @@ export default function AdminDashboard({ email }: AdminDashboardProps) {
                               />
                             </div>
 
+                            {/* Flavor Stock */}
+                            <div className="md:col-span-2 space-y-1">
+                              <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Stock</label>
+                              <input
+                                type="number"
+                                value={flv.stock ?? ''}
+                                required
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setFlavors(prev => {
+                                    const next = [...prev];
+                                    next[idx] = { ...next[idx], stock: val };
+                                    return next;
+                                  });
+                                }}
+                                placeholder="e.g. 10"
+                                className="w-full bg-black border border-neutral-850 hover:border-neutral-850 focus:border-spartan-red rounded p-2 text-xs font-semibold text-white focus:outline-none transition-all font-mono"
+                              />
+                            </div>
+
                             {/* Flavor Image URL */}
-                            <div className="md:col-span-4 space-y-1">
+                            <div className="md:col-span-2 space-y-1">
                               <label className="block text-[9px] uppercase tracking-wider font-bold text-neutral-455">Image URL</label>
                               <input
                                 type="text"

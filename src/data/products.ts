@@ -2,6 +2,7 @@ export interface Flavor {
   name: string;
   price: number;
   image: string;
+  stock?: number;
 }
 
 export interface Product {

@@ -62,7 +62,8 @@ export async function POST(req: Request) {
       flavors: Array.isArray(data.flavors) ? data.flavors.map((f: any) => ({
         name: String(f.name).trim(),
         price: Number(f.price || 0),
-        image: String(f.image || '')
+        image: String(f.image || ''),
+        stock: Number(f.stock !== undefined ? f.stock : 0)
       })) : [],
       createdAt: new Date()
     };

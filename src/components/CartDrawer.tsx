@@ -161,13 +161,22 @@ export const CartDrawer = () => {
                             <span className="px-2 text-sm font-semibold text-white min-w-[20px] text-center">
                               {item.quantity}
                             </span>
-                            <button
-                              onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedFlavor?.name)}
-                              className="px-2 py-1 text-white/60 hover:text-white transition-colors cursor-pointer"
-                              aria-label="Increase quantity"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
+                            {(() => {
+                              const flavorStock = item.selectedFlavor
+                                ? (item.selectedFlavor.stock !== undefined ? item.selectedFlavor.stock : 10)
+                                : item.product.stock;
+                              const isAtMax = item.quantity >= flavorStock;
+                              return (
+                                <button
+                                  onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedFlavor?.name)}
+                                  disabled={isAtMax}
+                                  className={`px-2 py-1 text-white/60 hover:text-white transition-colors cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed`}
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              );
+                            })()}
                           </div>
                           <p className="text-sm font-bold text-white">
                             Rs. {(itemPrice * item.quantity).toLocaleString()}

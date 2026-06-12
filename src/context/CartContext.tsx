@@ -197,20 +197,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const addToCart = (product: Product, quantity = 1, flavor?: Flavor) => {
+    const flavorStock = flavor
+      ? (flavor.stock !== undefined ? flavor.stock : 10)
+      : product.stock;
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => 
         item.product.id === product.id && 
         item.selectedFlavor?.name === flavor?.name
       );
       if (existingItem) {
+        const newQty = Math.min(flavorStock, existingItem.quantity + quantity);
         return prevItems.map((item) =>
           item.product.id === product.id && 
           item.selectedFlavor?.name === flavor?.name
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQty }
             : item
         );
       }
-      return [...prevItems, { product, quantity, selectedFlavor: flavor }];
+      const newQty = Math.min(flavorStock, quantity);
+      return [...prevItems, { product, quantity: newQty, selectedFlavor: flavor }];
     });
     setCartDrawerOpen(true); // Automatically open the drawer on add
   };
@@ -229,11 +234,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product.id === productId && item.selectedFlavor?.name === flavorName
-          ? { ...item, quantity }
-          : item
-      )
+      prevItems.map((item) => {
+        if (item.product.id === productId && item.selectedFlavor?.name === flavorName) {
+          const flavorStock = item.selectedFlavor
+            ? (item.selectedFlavor.stock !== undefined ? item.selectedFlavor.stock : 10)
+            : item.product.stock;
+          const newQty = Math.min(flavorStock, quantity);
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      })
     );
   };
 

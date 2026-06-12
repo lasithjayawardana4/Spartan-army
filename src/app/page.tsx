@@ -119,6 +119,15 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-play category formulation slider every 4 seconds
+  useEffect(() => {
+    if (categories.length <= 1) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev === categories.length - 1 ? 0 : prev + 1));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [carouselIndex, categories.length]);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -379,27 +388,43 @@ export default function HomePage() {
                           zIndex,
                           rotateY,
                         }}
-                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.45 }}
                         onClick={() => {
                           if (absDiff !== 0) {
                             setCarouselIndex(idx);
                           }
                         }}
-                        className={`absolute w-[240px] md:w-[330px] h-[310px] md:h-[410px] rounded-2xl border p-4 md:p-5 flex flex-col justify-between cursor-pointer select-none group transition-all duration-300 ${
+                        className={`absolute w-[240px] md:w-[330px] h-[310px] md:h-[410px] rounded-2xl border p-4 md:p-5 flex flex-col justify-between cursor-pointer select-none group transition-[border-color,box-shadow] duration-300 overflow-hidden ${
                           absDiff === 0 
-                            ? "bg-neutral-900/95 border-spartan-red border-2 shadow-[0_0_35px_rgba(179,0,0,0.6),0_15px_30px_rgba(0,0,0,0.7)] backdrop-blur-md" 
-                            : "bg-zinc-900/85 border-white/10 hover:border-white/20 shadow-[0_10px_25px_rgba(0,0,0,0.8)]"
+                            ? "border-spartan-red border-2 shadow-[0_0_20px_rgba(179,0,0,0.4),0_10px_20px_rgba(0,0,0,0.6)]" 
+                            : "border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
                         }`}
                         style={{
                           transformStyle: "preserve-3d",
+                          willChange: "transform, opacity",
                         }}
                       >
+                        {/* Full-bleed background product image */}
+                        <div className="absolute inset-0 z-0">
+                          <img
+                            src={cat.image}
+                            alt={cat.name}
+                            className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-500 group-hover:scale-105"
+                          />
+                          {/* Rich dark gradient overlay for text contrast */}
+                          <div className={`absolute inset-0 transition-colors duration-300 ${
+                            absDiff === 0
+                              ? "bg-gradient-to-t from-black via-black/40 to-transparent"
+                              : "bg-black/60 bg-gradient-to-t from-black via-black/50 to-black/30"
+                          }`} />
+                        </div>
+
                         {/* Top Badge */}
                         <div className="flex justify-between items-start z-10">
-                          <span className={`text-[8px] md:text-[10px] uppercase font-black tracking-widest px-2 md:px-2.5 py-1 rounded-full border flex items-center gap-1 transition-all duration-300 ${
+                          <span className={`text-[8px] md:text-[10px] uppercase font-black tracking-widest px-2 md:px-2.5 py-1 rounded-full border flex items-center gap-1 transition-[opacity,border-color,background-color] duration-300 ${
                             absDiff === 0
                               ? "bg-spartan-red/20 text-white border-spartan-red/35"
-                              : "bg-zinc-800/70 text-white/70 border-white/10"
+                              : "bg-zinc-805/70 text-white/70 border-white/10"
                           }`}>
                             <Flame className={`h-2.5 w-2.5 md:h-3 md:w-3 transition-colors duration-300 ${
                               absDiff === 0 ? "text-spartan-red" : "text-white/50"
@@ -408,41 +433,24 @@ export default function HomePage() {
                           </span>
                         </div>
 
-                        {/* Square Card Image Wrapper */}
-                        <div className="relative my-2 w-full z-10">
-                          {/* Inner container with red border and overflow hidden to clip image */}
-                          <div className={`relative w-full aspect-square rounded-xl overflow-hidden border-2 bg-zinc-950/80 transition-colors duration-300 ${
-                            absDiff === 0 ? "border-spartan-red shadow-[0_0_15px_rgba(179,0,0,0.3)]" : "border-spartan-red-dark/70"
-                          }`}>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent z-10 pointer-events-none" />
-                            <motion.img
-                              src={cat.image}
-                              alt={cat.name}
-                              className="w-full h-full object-cover select-none pointer-events-none"
-                              whileHover={absDiff === 0 ? { scale: 1.08 } : {}}
-                              transition={{ duration: 0.3 }}
-                            />
-                          </div>
-
-                          {/* Brand Logo Badge sitting on the top-right corner of the image border */}
-                          <div className="absolute -top-2.5 -right-2.5 md:-top-4 md:-right-4 z-20 pointer-events-none select-none">
-                            <img
-                              src="/images/spartan_logo.png"
-                              alt="Spartan Brand Logo"
-                              className={`h-8 w-8 md:h-12 md:w-12 object-contain filter transition-all duration-300 ${
-                                absDiff === 0 
-                                  ? "drop-shadow-[0_0_12px_rgba(179,0,0,0.95)] drop-shadow-[0_0_4px_rgba(255,255,255,0.7)] scale-110" 
-                                  : "drop-shadow-[0_0_6px_rgba(179,0,0,0.4)] opacity-75"
-                              }`}
-                            />
-                          </div>
+                        {/* Brand Logo Badge sitting on the top-right corner of the card */}
+                        <div className="absolute top-4 right-4 z-20 pointer-events-none select-none">
+                          <img
+                            src="/images/spartan_logo.png"
+                            alt="Spartan Brand Logo"
+                            className={`h-7 w-7 md:h-10 md:w-10 object-contain filter transition-[opacity,filter] duration-300 ${
+                              absDiff === 0 
+                                ? "drop-shadow-[0_0_8px_rgba(179,0,0,0.85)] scale-110" 
+                                : "drop-shadow-[0_0_4px_rgba(0,0,0,0.4)] opacity-60"
+                            }`}
+                          />
                         </div>
 
                         {/* Card Footer details */}
-                        <div className="flex items-end justify-between pt-3 border-t border-white/5 z-10">
+                        <div className={`flex items-end justify-between pt-3 z-10 ${absDiff === 0 ? "border-t border-white/10" : ""}`}>
                           <div className="flex flex-col text-left">
                             <h4 className={`text-xs md:text-base font-black uppercase tracking-wider leading-tight transition-colors duration-300 ${
-                              absDiff === 0 ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" : "text-white/80"
+                              absDiff === 0 ? "text-white" : "text-white/80"
                             }`}>
                               {cat.name}
                             </h4>

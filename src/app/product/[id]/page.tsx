@@ -126,6 +126,9 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   }
 
   const basePrice = selectedFlavor ? selectedFlavor.price : product.price;
+  const currentStock = selectedFlavor
+    ? (selectedFlavor.stock !== undefined ? selectedFlavor.stock : 10)
+    : product.stock;
   const isWishlisted = wishlist.includes(product.id);
 
   const reviewsList = (product as any).reviews || [];
@@ -134,6 +137,17 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
     ? (reviewsList.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewsList.length) 
     : (product.rating || 5);
   const roundedRating = Math.round(averageRating);
+
+  // Cap quantity if it exceeds current stock
+  useEffect(() => {
+    if (product) {
+      if (currentStock <= 0) {
+        setQuantity(1);
+      } else if (quantity > currentStock) {
+        setQuantity(currentStock);
+      }
+    }
+  }, [selectedFlavor, product, currentStock, quantity]);
 
   // Image switcher handlers
   const handlePrevImage = () => {
@@ -152,9 +166,12 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   
   // WhatsApp link generator
   const getWhatsAppInquiryUrl = (isRestock: boolean = false) => {
+    if (!product) return "";
+    const flavorStr = selectedFlavor ? ` (Flavor: ${selectedFlavor.name})` : "";
+    const priceToUse = selectedFlavor ? selectedFlavor.price : product.price;
     const text = isRestock
-      ? `Hello Spartan Supplements, I would like to inquire about when the product: ${product.name} (Rs. ${product.price.toLocaleString()}) will be restocked.`
-      : `Hello Spartan Supplements, I would like to inquire about the product: ${product.name} (Rs. ${product.price.toLocaleString()})`;
+      ? `Hello Spartan Supplements, I would like to inquire about when the product: ${product.name}${flavorStr} (Rs. ${priceToUse.toLocaleString()}) will be restocked.`
+      : `Hello Spartan Supplements, I would like to inquire about the product: ${product.name}${flavorStr} (Rs. ${priceToUse.toLocaleString()})`;
     return `https://wa.me/94715520324?text=${encodeURIComponent(text)}`;
   };
 
@@ -283,13 +300,13 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                 </span>
               )}
               {/* Stock Status Badge */}
-              {product.stock <= 0 ? (
+              {currentStock <= 0 ? (
                 <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-red text-spartan-red animate-pulse">
                   Sold Out
                 </span>
-              ) : product.stock <= 5 ? (
+              ) : currentStock <= 5 ? (
                 <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-gold text-spartan-gold">
-                  Low Stock ({product.stock} Left)
+                  Low Stock ({currentStock} Left)
                 </span>
               ) : (
                 <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest bg-zinc-950 border border-spartan-gold/60 text-spartan-gold">
@@ -382,6 +399,8 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                 <div className="flex flex-wrap gap-2.5">
                   {product.flavors.map((flv) => {
                     const isSelected = selectedFlavor?.name === flv.name;
+                    const flvStock = flv.stock !== undefined ? flv.stock : 10;
+                    const isSoldOut = flvStock <= 0;
                     return (
                       <button
                         key={flv.name}
@@ -400,10 +419,12 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
                         className={`px-4 py-2.5 rounded border text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                           isSelected
                             ? "bg-spartan-red border-spartan-red text-white shadow-glow-red"
+                            : isSoldOut
+                            ? "bg-zinc-900 border-zinc-800 text-neutral-500 opacity-60 line-through"
                             : "bg-white/5 border-white/10 text-white/80 hover:border-white/30 hover:bg-white/10"
                         }`}
                       >
-                        {flv.name}
+                        {flv.name} {isSoldOut && <span className="text-[8px] font-black text-spartan-red ml-1 normal-case tracking-normal">(Sold Out)</span>}
                         <span className={`block text-[9px] mt-0.5 font-black tracking-widest ${isSelected ? "text-spartan-gold" : "text-white/40"}`}>
                           Rs. {flv.price.toLocaleString()}
                         </span>
@@ -417,25 +438,24 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
             {/* Quantity and Actions */}
             <div className="space-y-4 pt-4 border-t border-white/5 max-w-[480px] w-full">
               <div className="flex flex-wrap items-center gap-4">
-                
-                {/* Qty Selector */}
+                          {/* Qty Selector */}
                 <div className={`flex items-center justify-between border border-white/10 rounded bg-black h-12 order-1 flex-1 sm:flex-initial sm:w-auto ${
-                  product.stock <= 0 ? "opacity-30 pointer-events-none" : ""
+                  currentStock <= 0 ? "opacity-30 pointer-events-none" : ""
                 }`}>
                   <button
-                    disabled={product.stock <= 0}
+                    disabled={currentStock <= 0}
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-4 text-white/60 hover:text-white transition-colors h-full"
+                    className="px-4 text-white/60 hover:text-white transition-colors h-full cursor-pointer disabled:cursor-not-allowed"
                   >
                     -
                   </button>
-                  <span className="px-4 text-sm font-bold text-white min-w-[40px] text-center">
-                    {product.stock <= 0 ? 0 : quantity}
+                  <span className="px-4 text-sm font-bold text-white min-w-[40px] text-center select-none">
+                    {currentStock <= 0 ? 0 : quantity}
                   </span>
                   <button
-                    disabled={product.stock <= 0}
+                    disabled={currentStock <= 0 || quantity >= currentStock}
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-4 text-white/60 hover:text-white transition-colors h-full"
+                    className="px-4 text-white/60 hover:text-white transition-colors h-full cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
@@ -443,16 +463,16 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
 
                 {/* Add to Cart */}
                 <button
-                  disabled={product.stock <= 0}
+                  disabled={currentStock <= 0}
                   onClick={() => addToCart(product, quantity, selectedFlavor || undefined)}
                   className={`order-3 w-full sm:order-2 sm:flex-1 h-12 inline-flex items-center justify-center gap-2 rounded font-bold uppercase tracking-wider text-sm transition-all cursor-pointer ${
-                    product.stock <= 0
+                    currentStock <= 0
                       ? "bg-zinc-800 text-neutral-500 border border-zinc-700 cursor-not-allowed shadow-none"
                       : "bg-spartan-red hover:bg-spartan-red-dark text-white shadow-glow-red hover:shadow-glow-red-heavy"
                   }`}
                 >
                   <ShoppingCart className="h-4.5 w-4.5" />
-                  {product.stock <= 0 ? "Sold Out" : "Add to Cart"}
+                  {currentStock <= 0 ? "Sold Out" : "Add to Cart"}
                 </button>
 
                 {/* Wishlist button */}
@@ -468,7 +488,7 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
               </div>
 
               {/* Buy Now & Contact Sellers */}
-              {product.stock <= 0 ? (
+              {currentStock <= 0 ? (
                 <div className="pt-2">
                   <a
                     href={getWhatsAppInquiryUrl(true)}
