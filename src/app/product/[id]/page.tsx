@@ -28,6 +28,21 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   const [promoInput, setPromoInput] = useState<string>("");
   const [promoError, setPromoError] = useState<string | null>(null);
 
+  const currentStock = selectedFlavor
+    ? (selectedFlavor.stock !== undefined ? selectedFlavor.stock : 10)
+    : (product ? product.stock : 0);
+
+  // Cap quantity if it exceeds current stock
+  useEffect(() => {
+    if (product) {
+      if (currentStock <= 0) {
+        setQuantity(1);
+      } else if (quantity > currentStock) {
+        setQuantity(currentStock);
+      }
+    }
+  }, [selectedFlavor, product, currentStock, quantity]);
+
   const handleApplyProductPromo = () => {
     if (!product) return;
     setPromoError(null);
@@ -126,9 +141,6 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
   }
 
   const basePrice = selectedFlavor ? selectedFlavor.price : product.price;
-  const currentStock = selectedFlavor
-    ? (selectedFlavor.stock !== undefined ? selectedFlavor.stock : 10)
-    : product.stock;
   const isWishlisted = wishlist.includes(product.id);
 
   const reviewsList = (product as any).reviews || [];
@@ -138,16 +150,6 @@ export default function ProductDetailsPage({ params }: ProductPageProps) {
     : (product.rating || 5);
   const roundedRating = Math.round(averageRating);
 
-  // Cap quantity if it exceeds current stock
-  useEffect(() => {
-    if (product) {
-      if (currentStock <= 0) {
-        setQuantity(1);
-      } else if (quantity > currentStock) {
-        setQuantity(currentStock);
-      }
-    }
-  }, [selectedFlavor, product, currentStock, quantity]);
 
   // Image switcher handlers
   const handlePrevImage = () => {
