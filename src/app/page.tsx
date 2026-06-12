@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/data/products";
 import { Flame, Star, Shield, Award, Zap, Heart, Eye, ShoppingCart, ArrowRight, Trophy, Search, ChevronLeft, ChevronRight, Truck, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 interface SmokeClick {
@@ -101,6 +101,12 @@ export default function HomePage() {
   // Search input local state
   const [localSearch, setLocalSearch] = useState("");
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Framer Motion values for Swipe-to-Shop button interaction
+  const dragX = useMotionValue(0);
+  const swipeProgress = useTransform(dragX, [0, 220], [0, 1]);
+  const textOpacity = useTransform(dragX, [0, 110], [1, 0.15]);
+  const fillWidth = useTransform(dragX, [0, 220], ["0%", "100%"]);
 
   // Intro states for door slide
   const [introStep, setIntroStep] = useState<"showing" | "animating" | "done">("showing");
@@ -494,43 +500,83 @@ export default function HomePage() {
               </div>
 
               {/* Swipe to Shop button placed closely under the cards */}
-              <div className="mx-auto max-w-[280px] w-full md:hidden mt-2 mb-1 select-none relative z-20">
-                <div className="relative h-14 bg-zinc-950/80 border border-white/5 rounded-full flex items-center p-1 overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
-                  {/* Shimmering label text in the background */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-xs font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white/30 via-white/80 to-white/30 bg-[length:200%_100%] animate-shimmer">
-                      {isRedirecting ? "Entering Shop..." : "Swipe to Enter Shop"}
-                    </span>
-                  </div>
+              <div className="mx-auto max-w-[290px] w-full md:hidden mt-4 mb-2 select-none relative z-20">
+                {/* Heavy metallic border outer container with slow red pulse */}
+                <div className="relative h-15 bg-black border-2 border-zinc-900 rounded-full flex items-center p-1 overflow-hidden shadow-[0_0_20px_rgba(179,0,0,0.15),inset_0_2px_8px_rgba(0,0,0,0.95)]">
+                  
+                  {/* Glowing progress trail that expands as you drag */}
+                  <motion.div 
+                    style={{ width: fillWidth }} 
+                    className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-spartan-red/5 via-spartan-red/20 to-spartan-red/45 rounded-full pointer-events-none" 
+                  />
 
-                  {/* Slider Knob */}
+                  {/* Shimmering label text in the background */}
+                  <motion.div 
+                    style={{ opacity: textOpacity }}
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white/40 via-white/95 to-white/40 bg-[length:200%_100%] animate-shimmer">
+                      {isRedirecting ? "Entering Arena..." : (
+                        <>
+                          Swipe to Enter <span className="text-transparent bg-clip-text bg-gradient-to-r from-spartan-gold via-yellow-400 to-spartan-gold font-extrabold">Shop</span>
+                        </>
+                      )}
+                    </span>
+                  </motion.div>
+
+                  {/* Slider Knob - Styled as a Heavy Spartan Iron Shield */}
                   {!isRedirecting && (
                     <motion.div
                       drag="x"
                       dragConstraints={{ left: 0, right: 220 }}
-                      dragElastic={0.05}
+                      dragElastic={0.03}
                       dragMomentum={false}
+                      style={{ x: dragX }}
                       onDragEnd={(event, info) => {
                         if (info.offset.x >= 190) {
                           setIsRedirecting(true);
                           router.push("/shop");
                         }
                       }}
-                      className="h-11 w-11 rounded-full bg-gradient-to-r from-spartan-red to-red-700 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-[0_0_10px_rgba(179,0,0,0.5)] border border-spartan-red/30 z-10"
+                      whileHover={{ 
+                        scale: 1.05, 
+                        boxShadow: "0 0 15px rgba(179,0,0,0.7)",
+                        borderColor: "rgba(212,175,55,0.8)"
+                      }}
+                      whileTap={{ 
+                        scale: 0.98,
+                        boxShadow: "0 0 25px rgba(179,0,0,0.9)",
+                        cursor: "grabbing"
+                      }}
+                      className="h-12 w-12 rounded-full bg-gradient-to-br from-zinc-800 via-neutral-950 to-zinc-900 flex items-center justify-center cursor-grab active:cursor-grabbing border-2 border-spartan-red shadow-[0_0_10px_rgba(179,0,0,0.5),inset_0_1px_3px_rgba(255,255,255,0.2)] z-10 transition-[border-color] duration-300"
                     >
-                      <motion.div
-                        animate={{ x: [0, 4, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
+                      {/* Spartan Helmet Crest SVG inside the shield */}
+                      <svg 
+                        viewBox="0 0 24 24" 
+                        className="h-6 w-6 text-spartan-gold fill-spartan-gold/15 drop-shadow-[0_0_8px_rgba(212,175,55,0.95)]" 
+                        stroke="currentColor" 
+                        strokeWidth="1.5" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
                       >
-                        <ChevronRight className="h-5 w-5 text-white stroke-[3px]" />
-                      </motion.div>
+                        {/* Crest/Plume at the top */}
+                        <path d="M12 2v3M8 3.5c1-1 2.5-1.5 4-1.5s3 .5 4 1.5M5 7c1.5-1.5 3.5-2.5 7-2.5s5.5 1 7 2.5" />
+                        {/* Helmet Mask */}
+                        <path d="M6 7v6c0 4 3.5 6.5 6 7.5 2.5-1 6-3.5 6-7.5V7" />
+                        {/* Eyes slit */}
+                        <path d="M9 11c.5-1 1.5-1.5 3-1.5s2.5.5 3 1.5" />
+                        {/* Vertical nose bar */}
+                        <path d="M12 9.5v5.5" strokeWidth="2" />
+                        {/* Cheek vents */}
+                        <path d="M9.5 15l-1 1.5M14.5 15l1 1.5" />
+                      </svg>
                     </motion.div>
                   )}
 
                   {/* Show loader inside knob area when redirecting */}
                   {isRedirecting && (
-                    <div className="h-11 w-11 rounded-full bg-spartan-red flex items-center justify-center shadow-[0_0_10px_rgba(179,0,0,0.5)] border border-spartan-red/30 z-10 animate-pulse ml-auto mr-1">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-zinc-800 via-neutral-950 to-zinc-900 border-2 border-spartan-red flex items-center justify-center shadow-[0_0_15px_rgba(179,0,0,0.8)] z-10 ml-auto mr-1">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-spartan-gold border-t-transparent" />
                     </div>
                   )}
                 </div>

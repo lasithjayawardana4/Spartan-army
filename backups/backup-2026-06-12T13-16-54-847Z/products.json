@@ -1,0 +1,327 @@
+[
+  {
+    "_id": "6a23e76576287e19bd9d608d",
+    "name": "Impact Creatine 250g",
+    "category": "creatine",
+    "price": 8900,
+    "oldPrice": 8900,
+    "rating": 5,
+    "reviewsCount": 3,
+    "image": "https://i.ibb.co/TDSDkCgC/Untitled-design-15.png",
+    "images": [
+      "https://i.ibb.co/TDSDkCgC/Untitled-design-15.png",
+      "/uploads/7_1780741995043.webp",
+      "/uploads/images__2__1780738370629.avif",
+      "/uploads/images__1__1780741905959.avif",
+      "/uploads/images__4__1780741913048.avif"
+    ],
+    "description": "More reps. More sets. \nMore of everything.\n\nCreatine monohydrate is the most researched supplement in sports nutrition history — and for good reason. Scientifically proven to increase physical performance in successive bursts of short-term, high-intensity exercise,¹ it works at a cellular level to help you push harder, lift heavier, and go again when others stop. \n\nEach serving delivers 3g of creatine monohydrate — the clinically effective dose to support strength, power, and explosive performance. \n\nTested beyond doubt. Trusted by millions.\n\nDeveloped alongside our Performance Advisory Board and certified by Informed Choice — the world-leading standard for banned substance testing.\n When the science is this clear, the choice is too.\n\nDaily dose. Extraordinary results.\nNo loading phase. No complexity. Just 3g of creatine monohydrate every day — keeping your stores topped up so you're always ready to perform at your absolute best.\n Your body uses creatine every time you train. Keep it fuelled, and there's no ceiling on what you can achieve.",
+    "shortDescription": "100% Original Products delivered from UK",
+    "benefits": [
+      "Muscle repair",
+      "Recovery",
+      "Strenght Increasing",
+      "Brain and heart health"
+    ],
+    "ingredients": [
+      "Ingredients: Creatine Monohydrate.\nProduced in a facility which also handles milk.\nSuitable for: vegetarians and vegans."
+    ],
+    "usage": "3g Daily",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 0,
+    "createdAt": "2026-06-06T09:24:53.043Z",
+    "id": "6a23e76576287e19bd9d608d",
+    "updatedAt": "2026-06-11T10:03:45.088Z",
+    "discountPercentage": 15,
+    "flavors": [],
+    "promoCode": "LZIIC"
+  },
+  {
+    "_id": "6a23fa5276287e19bd9d608e",
+    "name": "MuscleTec Creatine 400g",
+    "category": "creatine",
+    "price": 11000,
+    "oldPrice": 16800,
+    "rating": 5,
+    "reviewsCount": 0,
+    "image": "/uploads/muscletech-int-platinum-100-creatine-monohydrate_1780742543621.webp",
+    "images": [
+      "/uploads/muscletech-int-platinum-100-creatine-monohydrate_1780742543621.webp",
+      "/uploads/muscletech-int-platinum-100-creatine-monohydrate-right_1780742556211.webp",
+      "/uploads/muscletech-int-platinum-100-creatine-monohydrate-how-to-use_1780742556281.jpg",
+      "/uploads/muscletech-int-platinum-100-creatine-monohydrate-build-muscle_1780742556342.webp",
+      "/uploads/mt-platinum-100-creatine-monohydrate-high-quality_1780742556418.jpg"
+    ],
+    "description": "This premium creatine formula fuels strength, recovery, and performance for athletes who push harder. Each serving provides 5g of ultra-pure, HPLC-tested micronized creatine monohydrate — the most researched form available. Designed to support ATP regeneration, Platinum 100% Creatine Monohydrate helps power your training intensity and endurance with every scoop. No fillers, no additives — just pure creatine performance.\nUltra-Pure Micronized Creatine\nSupports Strength & Muscle Power\nMixes Easily. No Fillers.",
+    "shortDescription": "Platinum 100% Creatine Monohydrate delivers the most researched and high-quality form of creatine to help support strength, recovery, and performance — made for those who train to break limits.",
+    "benefits": [
+      "This premium creatine formula fuels strength, recovery, and performance for athletes who push harder. Each serving provides 5g of ultra-pure, HPLC-tested micronized creatine monohydrate — the most researched form available. Designed to support ATP regeneration, Platinum 100% Creatine Monohydrate helps power your training intensity and endurance with every scoop. No fillers, no additives — just pure creatine performance.",
+      "Ultra-Pure Micronized Creatine",
+      "Supports Strength & Muscle Power",
+      "Mixes Easily. No Fillers."
+    ],
+    "ingredients": [
+      "5G (80 servings)\nCreatine Monohydrate‡\nA research-supported form of creatine that helps support muscle energy",
+      "strength",
+      "and performance during resistance training."
+    ],
+    "usage": "Loading Phase: For the first 3 days, mix 1 serving (1 scoop) with 8 oz. of water and consume 4 times daily. Maintenance Phase: After 3 days, mix 1 serving (1 scoop) with 8 oz. of water and consume 1 to 2 times daily. Maintain an adequate state of hydration during use.",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 0,
+    "createdAt": "2026-06-06T10:45:38.365Z",
+    "id": "6a23fa5276287e19bd9d608e",
+    "updatedAt": "2026-06-11T09:59:47.292Z",
+    "discountPercentage": null,
+    "flavors": [],
+    "promoCode": null
+  },
+  {
+    "_id": "6a23fc9f76287e19bd9d608f",
+    "name": "MuscleTec Mass Gainer 2.72kg",
+    "category": "mass-gainers",
+    "price": 28000,
+    "oldPrice": 19400,
+    "rating": 5,
+    "reviewsCount": 0,
+    "image": "/uploads/muscletech-int-mass-tech-extreme_1780743199435.webp",
+    "images": [
+      "/uploads/muscletech-int-mass-tech-extreme_1780743199435.webp",
+      "/uploads/muscletech-int-mass-tech-extreme-for-hardgainers_1780743225808.jpg",
+      "/uploads/muscletech-int-mass-tech-extreme-back_1780743225856.webp",
+      "/uploads/muscletech-int-mass-tech-extreme-how-to-use_1780743225900.jpg",
+      "/uploads/masstech-extreme-pack-on-extreme-size_1780743225974.jpg"
+    ],
+    "description": "Everything You Need to Pack on Extreme Size\nMass-Tech® Extreme is built for serious lifters who want to push size and strength to the next level. Each serving provides 60 g of premium protein, 2,130 calories, and a 5 g dose of creatine monohydrate. Designed for hardgainers, this complete formula fuels muscle growth, recovery, and training intensity. With its multi-phase carb complex and smooth flavor, Mass-Tech® Extreme is the ultimate mass-building solution for your toughest goals.\nBuild Serious Mass & Strength\nClean Calories for Extreme Gains\nSupports Recovery & Performance",
+    "shortDescription": "Scientifically Superior Mass Gainer\nMass-Tech® Extreme is an advanced, high-calorie mass gainer engineered for athletes who train hard and burn through calories fast. It delivers high-quality protein, a multi-phase carb blend, and creatine monohydrate to help support size, strength, and recovery.",
+    "benefits": [
+      "Build Muscle",
+      "Delivers 60 g of high-quality protein to help support muscle growth and repair after intense training.",
+      "Increase Strength",
+      "Provides 5 g of creatine monohydrate per serving to help support strength and performance during resistance training.¹",
+      "Support Recovery",
+      "Features a multi-phase carb complex and amino acids to help replenish glycogen and support post-workout recovery.",
+      "Clean Calories",
+      "Formulated for hardgainers who need nutrient-dense calories from premium protein and carbohydrates to reach their size goals."
+    ],
+    "ingredients": [
+      "6\n0\nG\nProtein Blend‡\nA premium mix of whey protein concentrate",
+      "hydrolyzed whey protein isolate",
+      "and whey protein isolate to support muscle growth and recovery.\n4\n6\n0\nG\nMulti-Phase Carb Complex‡\nA blend of maltodextrin",
+      "oat bran",
+      "and isomaltulose that provides clean fuel to support sustained energy and glycogen replenishment.\n5\nG\nCreatine Monohydrate‡\nThe most researched form of creatine — helps support strength",
+      "performance",
+      "and muscle fullness."
+    ],
+    "usage": "Shaker Cup: Mix ½ serving (3 scoops) with 8–10 oz. of cold water and consume twice daily. Blender: Mix 1 serving (6 scoops) with 16–20 oz. of cold water and consume once daily. Take in the morning, between meals, or post-workout. Maintain adequate hydration during use. Read the entire label before use and follow directions provided.",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 0,
+    "createdAt": "2026-06-06T10:55:27.168Z",
+    "id": "6a23fc9f76287e19bd9d608f",
+    "discountPercentage": null,
+    "flavors": [],
+    "promoCode": null,
+    "updatedAt": "2026-06-11T09:59:32.140Z"
+  },
+  {
+    "_id": "6a25138de50d561208aa5b99",
+    "name": "Muscle Rush 2.0 Pre Workout",
+    "category": "pre-workout",
+    "price": 11000,
+    "oldPrice": 13000,
+    "rating": 5,
+    "reviewsCount": 0,
+    "image": "https://i.ibb.co/DgQz17P2/Untitled-design-12.png",
+    "images": [
+      "https://i.ibb.co/DgQz17P2/Untitled-design-12.png",
+      "https://innerarmour.com/wp-content/uploads/2024/07/Untitled-design-52.png"
+    ],
+    "description": "Energy Boost – Provides a quick and sustained energy boost with ingredients like Caffeine Anhydrous and Taurine. \n \n\nFocus Enhancement – Improves mental clarity and focus during workouts with N-Acetyl-l Tyrosine and Huperzine. \n \n\nEndurance Support – Increases stamina and endurance with Beta-Alanine and L-citrulline Malate.\n \n\nMuscle Pump – Enhances muscle pump for better performance with L-citrulline Malate and Alpha-GPC. \n \n\nNo Crash – Provides energy without the dreaded crash afterward, thanks to well-balanced ingredients like Caffeine Anhydrous.\n \n\nNatural Ingredients – Contains natural or clean ingredients, a big plus for many people. These features make our Muscle Rush Pre-Workout stand out!\n \n\nInformed Choice Certified – Free of banned substances",
+    "shortDescription": "Muscle Rush – Power in a Bottle!\n\nMeet Muscle Rush, your new go-to for intense workouts. This advanced pre-workout mix is designed to spike your energy and focus, helping you perform the best every time you hit the gym. It comes in two refreshing flavors: Orange and Lemon Lime.\n\nOrange Flavor: Get a citrus boost with our Orange flavor, perfect for charging up before your workout. Each serving helps you stay focused and energized, so you can push through the days you don’t feel your best.\n\nLemon Lime Flavor: Enjoy the surge of Lemon Lime, which boosts your endurance and performance. It’s great for those looking to feel refreshed and energized during training.\n\nEach container of Muscle Rush contains 30 servings, ensuring you have plenty of fuel to support your daily fitness goals.",
+    "benefits": [
+      "Unmatched Energy",
+      "Boosted Power",
+      "Cognitive Focus",
+      "Superior Strength",
+      "Heightened Alertness"
+    ],
+    "ingredients": [
+      "L-Citrulline Malate\nBeta-Alanine\nCreatine Monohydrate\nBetaine Anhydrous\nCaffeine Anhydrous\nTaurine"
+    ],
+    "usage": "",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": false,
+    "stock": 0,
+    "createdAt": "2026-06-07T06:45:33.335Z",
+    "id": "6a25138de50d561208aa5b99",
+    "updatedAt": "2026-06-11T09:57:54.606Z",
+    "discountPercentage": null,
+    "promoCode": null,
+    "flavors": []
+  },
+  {
+    "_id": "6a251666d7bb2a73d60d3129",
+    "name": "Nuclear Nutrition Synthesis Multi Creatine Complex 300 g",
+    "category": "creatine",
+    "price": 8500,
+    "oldPrice": 14000,
+    "rating": 5,
+    "reviewsCount": 11,
+    "image": "https://i.ibb.co/jP8Y6xKr/Untitled-design-13.png",
+    "images": [
+      "https://i.ibb.co/jP8Y6xKr/Untitled-design-13.png"
+    ],
+    "description": "",
+    "shortDescription": "",
+    "benefits": [],
+    "ingredients": [],
+    "usage": "",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 0,
+    "createdAt": "2026-06-07T06:57:42.265Z",
+    "id": "6a251666d7bb2a73d60d3129",
+    "discountPercentage": null,
+    "flavors": [],
+    "promoCode": null,
+    "updatedAt": "2026-06-11T09:55:06.603Z"
+  },
+  {
+    "_id": "6a2517d31b797a73dd0e1fc0",
+    "name": "Platinum Multi Vitamin",
+    "category": "vitamins-minerals",
+    "price": 8000,
+    "oldPrice": 9500,
+    "rating": 5,
+    "reviewsCount": 0,
+    "image": "https://international.muscletech.com/wp-content/uploads/2022/06/muscletech-int-platinum-multi-vitamin.png",
+    "images": [
+      "https://international.muscletech.com/wp-content/uploads/2022/06/muscletech-int-platinum-multi-vitamin.png",
+      "https://international.muscletech.com/wp-content/uploads/2022/06/muscletech-int-platinum-multi-vitamin-left.png"
+    ],
+    "description": "",
+    "shortDescription": "",
+    "benefits": [],
+    "ingredients": [],
+    "usage": "",
+    "features": [],
+    "isBestSeller": false,
+    "isNewArrival": true,
+    "isPopular": false,
+    "stock": 0,
+    "createdAt": "2026-06-07T07:03:47.570Z",
+    "id": "6a2517d31b797a73dd0e1fc0",
+    "updatedAt": "2026-06-11T09:51:50.243Z",
+    "discountPercentage": null,
+    "flavors": [],
+    "promoCode": null
+  },
+  {
+    "_id": "6a269d4fdbc50d1b038305b5",
+    "name": "MUTANT  CREAKONG CREATINE",
+    "category": "creatine",
+    "price": 9700,
+    "oldPrice": 11800,
+    "rating": 5,
+    "reviewsCount": 19,
+    "image": "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+    "images": [
+      "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+      "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_br_NS-L3.png?v=1749757523&width=1080"
+    ],
+    "description": "CREAKONG reigns as the king of the creatine jungle. Sure, you could always pick up the basic creatine supplement with a laughable amount of creatine monohydrate per serving, but you are anything but basic, right? CREAKONG delivers a potent blend of 4 grams of three types of creatine for maximum bioavailability. All three creatines in CREAKONG have been extensively scientifically studied and proven to increase muscle mass, strength, and athletic performance. CREAKONG is unflavored for easy stacking with MUTANT’s other products and is drug-tested for banned substances by Informed Choice.",
+    "shortDescription": "Advanced Creatine Blend\n\nADVANCE YOUR MUSCLE-BUILDING AND PERFORMANCE GOALS",
+    "benefits": [
+      "3-Creatine Blend",
+      "Unflavored for Easy Stacking",
+      "No Excess Bullsh#t",
+      "Banned-Substance Tested"
+    ],
+    "ingredients": [
+      "CREAKONG’s 3-creatine blend includes creatine monohydrate",
+      "creatine-magnesium chelate",
+      "and tri-creatine citrate. All three of these creatines work synergistically together to deliver the full benefits of creatine in a potent triple stack",
+      "delivering a better cross-spectrum – multiple creatines for multiple attack points! CREAKONG delivers a scientifically validated dose of 4 grams of this 3-creatine blend per serving."
+    ],
+    "usage": "1 Scoop with 100ml",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 0,
+    "createdAt": "2026-06-08T10:45:35.379Z",
+    "id": "6a269d4fdbc50d1b038305b5",
+    "discountPercentage": 15,
+    "promoCode": "LAZI04",
+    "updatedAt": "2026-06-11T09:51:35.593Z",
+    "flavors": []
+  },
+  {
+    "_id": "6a2a7fcf4e6c217201d8395e",
+    "name": "Applied Nutrition Creatine Monohydrate 250g",
+    "category": "creatine",
+    "price": 9000,
+    "oldPrice": 9000,
+    "rating": 5,
+    "reviewsCount": 39,
+    "image": "https://i.ibb.co/LDwc8bxc/unflavored.png",
+    "images": [
+      "https://i.ibb.co/LDwc8bxc/unflavored.png",
+      "https://appliednutrition.uk/cdn/shop/files/81so31I_C7L._AC_SX679.webp?v=1776673825&width=990",
+      "https://appliednutrition.uk/cdn/shop/files/How_to_use_6b83c436-6f50-4dda-8277-7d287d7466a5.webp?v=1776673825&width=990",
+      "https://appliednutrition.uk/cdn/shop/files/81RR7nadu2L._AC_SX679.webp?v=1776673825&width=990",
+      "https://appliednutrition.uk/cdn/shop/files/81FHWvoumNL._AC_SL1500.webp?v=1776673825&width=990"
+    ],
+    "description": "Creatine Monohydrate Powder is a highly effective and widely researched supplement designed to enhance athletic performance, increase muscle strength, and support muscle growth. This pure powder is ideal for athletes, bodybuilders, and fitness enthusiasts looking to improve their overall training capacity and achieve their fitness goals.\n\nApplied Nutrition’s Creatine provides the purest, most readily absorbed Creatine Monohydrate Formula available",
+    "shortDescription": "Creatine Monohydrate Powder boosts strength, power, and muscle growth with a pure, micronized formula for optimal absorption—perfect for athletes and fitness enthusiasts.",
+    "benefits": [
+      "Increased Strength and Power: Helps you lift heavier weights and perform more reps, leading to greater muscle gains over time.",
+      "Enhanced Athletic Performance: Ideal for high-intensity sports and activities, improving overall performance and endurance.",
+      "Improved Muscle Recovery: Reduces muscle soreness and accelerates recovery, allowing you to train more frequently.",
+      "Supports Lean Muscle Mass: Promotes the growth of lean muscle tissue without adding unwanted fat.",
+      "Can be easily mixed in water",
+      "Tested for Athletes by Informed Sport",
+      "Halal Certified Product"
+    ],
+    "ingredients": [
+      "100% Micronised Creatine Monohydrate."
+    ],
+    "usage": "Add 1 serving (5g) to water, shake and consume. Use 1-2 times daily preferably directly before and after exercise. After 8 weeks of continued use take 1 week off and start the cycle again.",
+    "features": [],
+    "isBestSeller": true,
+    "isNewArrival": true,
+    "isPopular": true,
+    "stock": 9,
+    "promoCode": "LAZIAN",
+    "discountPercentage": 10,
+    "flavors": [
+      {
+        "name": "Icy Blue Raz",
+        "price": 9200,
+        "image": "https://i.ibb.co/Nn6dL6Mq/ice.png",
+        "stock": 4
+      },
+      {
+        "name": "Strawberry & Raspberry",
+        "price": 9200,
+        "image": "https://i.ibb.co/gZPkSD5H/strawberry.png",
+        "stock": 2
+      }
+    ],
+    "createdAt": "2026-06-11T09:28:47.826Z",
+    "id": "6a2a7fcf4e6c217201d8395e",
+    "updatedAt": "2026-06-12T11:58:07.798Z"
+  }
+]

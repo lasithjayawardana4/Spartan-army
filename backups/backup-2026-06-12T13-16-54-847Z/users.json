@@ -1,0 +1,96 @@
+[
+  {
+    "_id": "6a24fbaee50d561208aa5b96",
+    "name": "geena",
+    "email": "geena@gmail.com",
+    "passwordHash": "fca814557d0196deb563d6215be541426ee1c2c054dfb77073f6fde95bacfe74244b17b0edba2358388570516d64a36c12a1eefb898ddb741ecb813ad00fa750",
+    "salt": "3d58fb2db95729d3f40d8b4584d331f9",
+    "contact": "0719553285",
+    "address": "123/70 matale",
+    "cart": [],
+    "wishlist": [],
+    "createdAt": "2026-06-07T05:03:42.788Z"
+  },
+  {
+    "_id": "6a250118e50d561208aa5b97",
+    "name": "sandil",
+    "email": "sandiljayawardana03@gmail.com",
+    "passwordHash": "d9916a57ef2524cd972824ecb078a4e637ab57bb22addc5206c0d46730062544af9d31c587856dff2c9380650f3dde1d34452dfa7c4905d64a5445c081b8dc7b",
+    "salt": "ce7d5b8dfd529d8c54c94e23e4835768",
+    "contact": "0719392131",
+    "address": "12535 Anagarika Dharmapala Mawatha, kandy",
+    "cart": [],
+    "wishlist": [],
+    "createdAt": "2026-06-07T05:26:48.163Z"
+  },
+  {
+    "_id": "6a27a22b23c7080613e72f58",
+    "name": "Sasindi jayawardana",
+    "email": "chelsijayawardana@gmail.com",
+    "passwordHash": "8a85fac26b79f80b19cd21e3a99600dc6fb8f121dad9dedbe3af39b0c98a023afbbfb211e9fd92aaa9b852a1e85a54e595a9e131b9a19d59a69746990dfcba7f",
+    "salt": "7e9db100e5b457b58a98fc579f135b95",
+    "contact": "0701537631",
+    "address": "129/35 anagarika dharmapala road,kandy",
+    "cart": [
+      {
+        "product": {
+          "_id": "6a269d4fdbc50d1b038305b5",
+          "name": "MUTANT  CREAKONG CREATINE",
+          "category": "creatine",
+          "price": 9700,
+          "oldPrice": 11800,
+          "rating": 5,
+          "reviewsCount": 19,
+          "image": "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+          "images": [
+            "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+            "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_br_NS-L3.png?v=1749757523&width=1080"
+          ],
+          "description": "CREAKONG reigns as the king of the creatine jungle. Sure, you could always pick up the basic creatine supplement with a laughable amount of creatine monohydrate per serving, but you are anything but basic, right? CREAKONG delivers a potent blend of 4 grams of three types of creatine for maximum bioavailability. All three creatines in CREAKONG have been extensively scientifically studied and proven to increase muscle mass, strength, and athletic performance. CREAKONG is unflavored for easy stacking with MUTANT’s other products and is drug-tested for banned substances by Informed Choice.",
+          "shortDescription": "Advanced Creatine Blend\n\nADVANCE YOUR MUSCLE-BUILDING AND PERFORMANCE GOALS",
+          "benefits": [
+            "3-Creatine Blend",
+            "Unflavored for Easy Stacking",
+            "No Excess Bullsh#t",
+            "Banned-Substance Tested"
+          ],
+          "ingredients": [
+            "CREAKONG’s 3-creatine blend includes creatine monohydrate",
+            "creatine-magnesium chelate",
+            "and tri-creatine citrate. All three of these creatines work synergistically together to deliver the full benefits of creatine in a potent triple stack",
+            "delivering a better cross-spectrum – multiple creatines for multiple attack points! CREAKONG delivers a scientifically validated dose of 4 grams of this 3-creatine blend per serving."
+          ],
+          "usage": "1 Scoop with 100ml",
+          "features": [],
+          "isBestSeller": true,
+          "isNewArrival": true,
+          "isPopular": true,
+          "stock": 10,
+          "createdAt": "2026-06-08T10:45:35.379Z",
+          "id": "6a269d4fdbc50d1b038305b5",
+          "discountPercentage": 15,
+          "promoCode": "LAZI04",
+          "updatedAt": "2026-06-09T04:44:08.673Z",
+          "reviews": []
+        },
+        "quantity": 2
+      }
+    ],
+    "wishlist": [
+      "6a269d4fdbc50d1b038305b5"
+    ],
+    "createdAt": "2026-06-09T05:18:35.458Z"
+  },
+  {
+    "_id": "6a27a8905158cec4f14245f4",
+    "name": "Geena De Silva",
+    "email": "geenadesilva2005@gmail.com",
+    "passwordHash": "f40166ba7ec676966db1a64ff2e5a6bf84682be55201117eaf4bddf45989068a9c724f0d919bca989381697540acc972be04e4cc3002f772bce18911b6292b03",
+    "salt": "74da9236ba1ca6717fecdf760b162511",
+    "contact": "0719553285",
+    "address": "24/17D ,kachcheriya road,matale",
+    "cart": [],
+    "wishlist": [],
+    "createdAt": "2026-06-09T05:45:52.223Z"
+  }
+]

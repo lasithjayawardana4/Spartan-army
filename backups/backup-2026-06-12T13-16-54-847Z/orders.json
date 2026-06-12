@@ -1,0 +1,140 @@
+[
+  {
+    "_id": "6a25021de50d561208aa5b98",
+    "orderId": "SPN-232805",
+    "email": "geena@gmail.com",
+    "userId": "6a24fbaee50d561208aa5b96",
+    "fullName": "geena",
+    "phone": "0719553285",
+    "address": "123/70 matale",
+    "city": "matale",
+    "notes": "",
+    "paymentMethod": "cod",
+    "items": [
+      {
+        "productId": "6a23fa5276287e19bd9d608e",
+        "name": "MuscleTec Creatine 400g",
+        "price": 11000,
+        "image": "/uploads/muscletech-int-platinum-100-creatine-monohydrate_1780742543621.webp",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 11000,
+    "shipping": 500,
+    "total": 11500,
+    "status": "completed",
+    "createdAt": "2026-06-07T05:31:09.836Z"
+  },
+  {
+    "_id": "6a27a27423c7080613e72f59",
+    "orderId": "SPN-901938",
+    "email": "chelsijayawardana@gmail.com",
+    "userId": "6a27a22b23c7080613e72f58",
+    "fullName": "Sasindi jayawardana",
+    "phone": "0701537631",
+    "address": "129/35 anagarika dharmapala road,kandy",
+    "city": "Kandy",
+    "notes": "",
+    "paymentMethod": "cod",
+    "items": [
+      {
+        "productId": "6a269d4fdbc50d1b038305b5",
+        "name": "MUTANT  CREAKONG CREATINE",
+        "price": 9700,
+        "image": "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 9700,
+    "shipping": 500,
+    "total": 8745,
+    "promoCode": "LAZI04",
+    "discountAmount": 1455,
+    "status": "pending",
+    "createdAt": "2026-06-09T05:19:48.667Z"
+  },
+  {
+    "_id": "6a27a661aeedbe7a18da9867",
+    "orderId": "SPN-746882",
+    "email": "geenadesilva2005@gmil.com",
+    "userId": null,
+    "fullName": "Geena De Silva",
+    "phone": "0719553285",
+    "address": "24/17D,kachcheriya road",
+    "city": "Matale",
+    "notes": "Love u baby ❤️",
+    "paymentMethod": "cod",
+    "items": [
+      {
+        "productId": "6a269d4fdbc50d1b038305b5",
+        "name": "MUTANT  CREAKONG CREATINE",
+        "price": 9700,
+        "image": "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 9700,
+    "shipping": 500,
+    "total": 8745,
+    "promoCode": "LAZI04",
+    "discountAmount": 1455,
+    "status": "pending",
+    "createdAt": "2026-06-09T05:36:33.724Z"
+  },
+  {
+    "_id": "6a27a8d95158cec4f14245f5",
+    "orderId": "SPN-953365",
+    "email": "geenadesilva2005@gmail.com",
+    "userId": "6a27a8905158cec4f14245f4",
+    "fullName": "Geena De Silva",
+    "phone": "0719553285",
+    "address": "24/17D ,kachcheriya road,matale",
+    "city": "Matale",
+    "notes": "Babiyoooo❤",
+    "paymentMethod": "cod",
+    "items": [
+      {
+        "productId": "6a269d4fdbc50d1b038305b5",
+        "name": "MUTANT  CREAKONG CREATINE",
+        "price": 9700,
+        "image": "https://mutantnation.com/cdn/shop/files/34001USMUTANTCREAKONGUnflavored300g_10.6oz_2.00_NS-L3.png?v=1749757523&width=1080",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 9700,
+    "shipping": 500,
+    "total": 8745,
+    "promoCode": "LAZI04",
+    "discountAmount": 1455,
+    "status": "pending",
+    "createdAt": "2026-06-09T05:47:05.719Z"
+  },
+  {
+    "_id": "6a2a634da30fe8bb7b9e544c",
+    "orderId": "SPN-502253",
+    "email": "geena@gmail.com",
+    "userId": "6a24fbaee50d561208aa5b96",
+    "fullName": "geena",
+    "phone": "0719553285",
+    "address": "123/70 matale",
+    "city": "Kandy",
+    "notes": "",
+    "paymentMethod": "cod",
+    "items": [
+      {
+        "productId": "6a2a334602c8312271b160c2",
+        "name": "tablets",
+        "price": 2900,
+        "image": "https://i.ibb.co/v4PG8QZ7/muscletech-int-platinum-multi-vitamin-right.webp",
+        "quantity": 1
+      }
+    ],
+    "subtotal": 2900,
+    "shipping": 500,
+    "total": 3400,
+    "promoCode": null,
+    "discountAmount": 0,
+    "status": "pending",
+    "createdAt": "2026-06-11T07:27:09.661Z"
+  }
+]

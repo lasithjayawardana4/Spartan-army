@@ -1,0 +1,56 @@
+[
+  {
+    "_id": "6a2a35d9f953d044fe389acf",
+    "id": "whey-protein",
+    "name": "Whey Protein",
+    "badge": "Big Gains. Bigger Nutrition",
+    "tagline": "Lean muscle growth & rapid repair",
+    "image": "/images/cat_whey_protein.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  },
+  {
+    "_id": "6a2a35d9f953d044fe389ad0",
+    "id": "mass-gainers",
+    "name": "Mass Gainers",
+    "badge": "Mass & Size. Warrior Build",
+    "tagline": "High calorie fuel for maximum size",
+    "image": "/images/cat_mass_gainer.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  },
+  {
+    "_id": "6a2a35d9f953d044fe389ad1",
+    "id": "pre-workout",
+    "name": "Pre Workout",
+    "badge": "Level up every session.",
+    "tagline": "Explosive energy & laser focus",
+    "image": "/images/cat_pre_workout.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  },
+  {
+    "_id": "6a2a35d9f953d044fe389ad2",
+    "id": "creatine",
+    "name": "Creatine",
+    "badge": "Pure Strength. Raw Power",
+    "tagline": "Boost ATP, strength & muscle volume",
+    "image": "/images/cat_creatine.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  },
+  {
+    "_id": "6a2a35d9f953d044fe389ad3",
+    "id": "fat-burners",
+    "name": "Fat Burners",
+    "badge": "Smart. Burn Fast",
+    "tagline": "Extreme thermogenic metabolic support",
+    "image": "/images/cat_fat_burner.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  },
+  {
+    "_id": "6a2a35d9f953d044fe389ad4",
+    "id": "vitamins-minerals",
+    "name": "Vitamins",
+    "badge": "Shield. Guard. Recover",
+    "tagline": "Daily micronutrients for elite health",
+    "image": "/images/cat_vitamins.png",
+    "createdAt": "2026-06-11T04:13:13.699Z"
+  }
+]

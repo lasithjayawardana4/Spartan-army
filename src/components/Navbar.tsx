@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Search, Menu, X, Heart, Phone, User, LogOut, MapPin, Mail } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, Heart, Phone, User, LogOut, MapPin, Mail, Store } from "lucide-react";
 
 import { CATEGORIES, Product } from "@/data/products";
 
@@ -354,10 +354,19 @@ export const Navbar = () => {
               )}
             </Link>
 
-            {/* Cart Trigger */}
+            {/* Shop Trigger (Mobile/Tablet only) */}
+            <Link
+              href="/shop"
+              className="relative p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all duration-200 lg:hidden rounded-full bg-white/5 border border-white/10 hover:border-spartan-gold/30 shadow-sm"
+              aria-label="Shop Supplements"
+            >
+              <Store className="h-4.5 w-4.5" />
+            </Link>
+
+            {/* Cart Trigger (Desktop only) */}
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="relative p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all duration-200 cursor-pointer rounded-full bg-white/5 border border-white/10 hover:border-spartan-gold/30 shadow-sm"
+              className="relative p-2.5 text-white/80 hover:text-spartan-gold hover:scale-105 transition-all duration-200 cursor-pointer hidden lg:inline-flex rounded-full bg-white/5 border border-white/10 hover:border-spartan-gold/30 shadow-sm"
               aria-label="Shopping Cart"
             >
               <ShoppingBag className="h-4.5 w-4.5" />
@@ -523,6 +532,25 @@ export const Navbar = () => {
             </div>
             <span className="ml-0.5">Wishlist</span>
           </Link>
+
+          {/* Cart Trigger inside mobile menu */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setCartDrawerOpen(true);
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-bold tracking-wider uppercase text-white/80 hover:bg-white/5 hover:text-spartan-gold transition-colors cursor-pointer text-left"
+          >
+            <div className="relative flex items-center">
+              <ShoppingBag className="h-4 w-4 text-spartan-gold" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-spartan-red text-[8px] font-bold text-white shadow-[0_0_6px_rgba(179,0,0,0.6)]">
+                  {cartCount}
+                </span>
+              )}
+            </div>
+            <span className="ml-0.5">Shopping Cart</span>
+          </button>
           
           {/* Mobile User session options */}
           {user ? (

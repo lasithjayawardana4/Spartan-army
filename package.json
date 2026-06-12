@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:backup": "node scripts/db-manager.js backup",
+    "db:restore": "node scripts/db-manager.js restore",
+    "db:seed": "node scripts/db-manager.js seed"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^10.0.0",

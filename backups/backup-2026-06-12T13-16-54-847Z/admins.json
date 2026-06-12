@@ -1,0 +1,9 @@
+[
+  {
+    "_id": "6a23a74dd67f2d237214d3c8",
+    "email": "lasith.jayawardana@spartan.supplements",
+    "passwordHash": "516f623b9ecf2704b6fe6c44261768510103c7f7d230e85e049b3ff2f3b2141c7df405d8c3ae10b0c9c0a52a2f7f0c3ff316beca3f6462bc14992bee9d495ee0",
+    "salt": "2c381e7c5886401d23ffccc4bd609889",
+    "createdAt": "2026-06-06T04:51:25.257Z"
+  }
+]
